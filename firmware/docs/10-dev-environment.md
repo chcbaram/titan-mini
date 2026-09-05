@@ -5,6 +5,22 @@
 
 ---
 
+## 0. 준비 스크립트
+
+새 PC 에서는 이것부터 돌린다. 아래 1~3장의 내용을 자동으로 처리한다.
+
+```bash
+python3 tools/setup_tools.py            # 준비
+python3 tools/setup_tools.py --check    # 확인만
+python3 tools/setup_tools.py --with-fsp # FSP 소스도 (RASC 재생성용)
+```
+
+호스트 도구를 확인하고, Renesas 공식 릴리스에서 DFP 팩을 받아 **결함 두 개를 고쳐**
+`packs/Renesas.RA_DFP.6.6.0-fixed.pack` 을 만든다. SVD 는 그 팩에서 꺼낸다.
+
+Renesas 배포본을 저장소에 재배포하지 않으려는 것이다. 무엇을 왜 고치는지는
+스크립트 상단 주석과 아래 2장에 있다.
+
 ## 1. 툴 목록
 
 전부 `~/hdd/tools/renesas-ra/` 아래에 정리돼 있다. 환경변수 하나로 참조한다.
@@ -63,9 +79,9 @@ cmake -S . -B build -G Ninja -DRA_DFP_PACK=/path/to/Renesas.RA_DFP.6.6.0-fixed.p
 변수가 없으면 configure 가 경고를 띄우고 `flash` 타겟은 실패한다. 조용히 넘어가면
 나중에 pyocd 가 빈 경로를 받아 엉뚱한 에러를 내기 때문이다.
 
-## 2. 함정 세 가지
+## 2. 팩과 도구의 함정
 
-### DFP 팩 원본은 깨져 있다
+### 결함 1 — DFP 팩 원본이 깨져 있다
 
 `MDK_Device_Packs_v6.6.0.zip` 안의 `Renesas.RA_DFP.6.6.0.pack` 은 **존재하지 않는 FLM 3개**(`RA8M1_2M_NS` / `RA8M1_CCONF_NS` / `RA8M1_DATA_C2M_NS`)를 참조한다. pyOCD 가 파싱 단계에서 통째로 죽는다.
 
@@ -74,6 +90,18 @@ Error: "There is no item named 'Flash/RA8M1_2M_NS.FLM' in the archive"
 ```
 
 **반드시 `-fixed` 수정본을 쓴다.** `pyocd pack install` 로 받으면 6.5.1 이 오는데 같은 버그가 있을 가능성이 높다.
+
+### 결함 2 — 듀얼코어의 AP 매핑이 없다
+
+pdsc 에 `<processor Pname="CPU0"/"CPU1">` 은 선언돼 있는데 **어느 AP 에 붙는지가 없다.**
+CPU1 이 잠들어 있는 동안은 드러나지 않다가, **기동한 뒤부터** pyOCD 가 연결에서 죽는다.
+
+```
+KeyError: <APv1Address@... #2 dp=0>   (pack_target.py:_pack_target_add_core)
+```
+
+`setup_tools.py` 가 듀얼코어 subFamily 세 개에 `<debug Pname __ap svd>` 를 넣는다.
+자세한 것은 [23장 8절](23-cm33-boot.md#8-함정--cpu1-을-깨우면-pyocd-가-죽는다).
 
 ### 타깃 이름은 `r7ka8p1kf` 다
 

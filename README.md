@@ -18,6 +18,7 @@ Cortex-M85 1 GHz(CPU0) + Cortex-M33(CPU1) + Ethos-U55 NPU. 보드에 실장된 �
 
 ```
 hardware/                       회로도 (KiCad PDF)
+tools/setup_tools.py            외부 자산 준비 (툴체인 확인 + DFP 팩)
 firmware/
 ├── docs/                       개발 문서 — 여기부터 읽는다
 └── ra8p1-fw/                   펌웨어
@@ -32,11 +33,54 @@ firmware/
         └── lib/ra_sdk/         FSP 소스와 코어별 생성물
 ```
 
+## 준비
+
+빌드에 필요한 외부 자산을 받는다. 새 PC 에서 한 번만 하면 된다.
+
+```bash
+python3 tools/setup_tools.py
+```
+
+하는 일
+
+| 항목 | 내용 |
+|---|---|
+| 호스트 도구 확인 | `arm-none-eabi-gcc`(Cortex-M85 지원 13.2 이상) · `cmake` · `ninja` · `pyocd` |
+| DFP 팩 | Renesas 공식 릴리스에서 받아 **결함 두 개를 고쳐** 놓는다 (아래) |
+| SVD | DFP 팩 안에 들어 있어 따로 받지 않는다 |
+
+FSP 소스는 저장소에 이미 vendoring 되어 있어 **빌드에는 필요 없다.** RASC 재생성이나
+예제 참조가 필요하면 `--with-fsp` 를 준다(약 180 MB).
+
+```bash
+python3 tools/setup_tools.py --check      # 확인만
+python3 tools/setup_tools.py --with-fsp   # FSP 소스도
+python3 tools/setup_tools.py --dir PATH   # 다른 폴더에
+```
+
+끝나면 안내하는 대로 셸 프로파일에 한 줄을 넣는다. **터미널에서 그때그때 `export` 하면
+GUI 로 띄운 VSCode 에 넘어가지 않아 디버깅이 안 된다.**
+
+```bash
+export RENESAS_RA_TOOLS="$HOME/hdd/tools/renesas-ra"
+```
+
+> ### DFP 팩을 왜 고치는가
+>
+> Renesas 배포본을 그대로 재배포하지 않고 공식 릴리스에서 받아 스크립트가 고친다.
+> 두 가지가 빠져 있다.
+>
+> **결함 1 — 없는 FLM 을 참조한다.** pdsc 가 `RA8M1_2M_NS.FLM` 등 세 개를 가리키는데
+> 팩 안에 없다. pyOCD 가 파싱 단계에서 통째로 죽는다. 내용이 같은 non-NS 판을 복사한다.
+>
+> **결함 2 — 듀얼코어의 코어별 AP 매핑이 없다.** `<processor Pname="CPU0"/"CPU1">` 은
+> 선언돼 있는데 어느 AP 에 붙는지가 없다. **CPU1 을 기동한 뒤부터** pyOCD 가 연결에서
+> `KeyError: <APv1Address #2>` 로 죽는다. 자세한 것은
+> [23장 8절](firmware/docs/23-cm33-boot.md#8-함정--cpu1-을-깨우면-pyocd-가-죽는다).
+
 ## 빌드
 
 ```bash
-export RENESAS_RA_TOOLS=~/hdd/tools/renesas-ra   # 셸 프로파일에 넣는다
-
 cd firmware/ra8p1-fw
 cmake -S . -B build -G Ninja
 cmake --build build -j8
@@ -68,8 +112,9 @@ VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
 ## 검사
 
 ```bash
-python3 firmware/ra8p1-fw/tools/check_layers.py   # ap/common 이 벤더 HAL 을 안 쓰는지
-python3 firmware/docs/check_svg.py                # 문서 그림의 글자 겹침/이탈
+python3 tools/setup_tools.py --check               # 툴체인과 자산이 갖춰졌는지
+python3 firmware/ra8p1-fw/tools/check_layers.py    # ap/common 이 벤더 HAL 을 안 쓰는지
+python3 firmware/docs/check_svg.py                 # 문서 그림의 글자 겹침/이탈
 ```
 
 ## 라이선스
