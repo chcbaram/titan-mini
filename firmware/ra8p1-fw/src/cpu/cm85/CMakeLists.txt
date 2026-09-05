@@ -40,6 +40,7 @@ add_executable(${EXECUTABLE}
   ${SRC_FILES_RA_GEN}
   ${SHARED_SRC_FILES}
   ${RA_SDK_SRC_FILES}
+  ${FREERTOS_SRC_FILES}
   )
 
 
@@ -53,7 +54,10 @@ set_target_properties(${EXECUTABLE} PROPERTIES
 target_include_directories(${EXECUTABLE} PRIVATE
   ${CORE_DIR}
   ${CORE_DIR}/ap
+  ${CORE_DIR}/ap/modules
+  ${CORE_DIR}/ap/modules/common/display
   ${CORE_DIR}/bsp
+  ${CORE_DIR}/bsp/rtos
   ${CORE_DIR}/hw
   ${CORE_DIR}/hw/driver
 
@@ -96,14 +100,17 @@ target_compile_options(${EXECUTABLE} PRIVATE
 #
 set_source_files_properties(
   ${RA_SDK_SRC_FILES}
+  ${FREERTOS_SRC_FILES}
   ${SRC_FILES_RA_GEN}
   TARGET_DIRECTORY ${EXECUTABLE}
   PROPERTIES
     COMPILE_OPTIONS "-Os;-w"
   )
 
-# fsp.ld 는 스텁이고 실제 내용은 memory_regions.ld / fsp_gen.ld 에 있다.
-# 이 둘은 ra_sdk 루트에 있으므로 -L 로 알려줘야 GNU ld 가 INCLUDE 를 찾는다.
+# 링커 스크립트는 우리가 소유한다(bsp/ldscript/). RASC 의 script/fsp.ld 를 직접 쓰면
+# .module 같은 우리 섹션이 재생성 때마다 날아간다.
+# 그 스크립트가 memory_regions.ld / fsp_gen.ld 를 INCLUDE 하므로 두 파일이 있는
+# ra_sdk 루트를 -L 로 알려줘야 GNU ld 가 찾는다.
 #
 target_link_directories(${EXECUTABLE} PRIVATE
   ${CORE_SDK}
@@ -111,7 +118,7 @@ target_link_directories(${EXECUTABLE} PRIVATE
   )
 
 target_link_options(${EXECUTABLE} PRIVATE
-  -T${CORE_SDK}/script/fsp.ld
+  -T${CORE_DIR}/bsp/ldscript/${PRJ_NAME}-${CORE_NAME}.ld
 
   -mcpu=cortex-m85
   -mthumb

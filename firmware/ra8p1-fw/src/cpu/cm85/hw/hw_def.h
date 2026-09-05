@@ -52,10 +52,39 @@
 #define      HW_LOG_LIST_BUF_MAX    1024
 
 
+//-- 이벤트 버스
+//   발행하는 쪽과 받는 쪽을 떼어 놓는다. 예를 들어 이더넷 드라이버는 링크가 붙으면
+//   EVENT_ETH_LINK 를 던지기만 하고, LED 로 보여줄지는 display 모듈이 정한다.
+//   코드 목록은 common/evt_code.h 에 있다.
+//
+#define _USE_HW_EVENT
+#define      HW_EVENT_Q_MAX         16
+#define      HW_EVENT_NODE_MAX      8
+
+
+//-- RTOS
+//   FSP 의 rm_freertos_port 를 포트 레이어로 쓴다. 커널은 RASC 가 가져온
+//   ra/aws/FreeRTOS 다. FreeRTOSConfig.h 는 bsp/rtos/ 에서 직접 관리한다.
+//
+#define _USE_HW_RTOS
+
+#define _USE_HW_THREAD
+#define      HW_THREAD_MAX_CNT      8
+
+#define _HW_DEF_THREAD_CLI_PRI        3
+#define _HW_DEF_THREAD_CLI_STACK      (4 * 1024)
+#define _HW_DEF_THREAD_MAIN_PRI       2
+#define _HW_DEF_THREAD_MAIN_STACK     (4 * 1024)
+
+
 //-- 드라이버별 CLI 명령
 //
 #define _USE_CLI_HW_UART             1
 #define _USE_CLI_HW_LOG              1
+#define _USE_CLI_HW_THREAD           1
+#define _USE_CLI_HW_MODULE           1
+#define _USE_CLI_HW_DISPLAY          1
+#define _USE_CLI_HW_EVENT            1
 
 
 #endif

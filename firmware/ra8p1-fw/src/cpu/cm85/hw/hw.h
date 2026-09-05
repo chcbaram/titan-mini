@@ -11,6 +11,8 @@ extern "C" {
 #include "uart.h"
 #include "cli.h"
 #include "log.h"
+#include "osal/thread.h"
+#include "event.h"
 
 
 bool hwInit(void);

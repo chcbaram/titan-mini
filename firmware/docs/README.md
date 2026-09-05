@@ -8,9 +8,10 @@
 |---|---|
 | 보드 | Titan Mini HW:V1.0 · MCU `R7KA8P1KFLCAC` (289 BGA) |
 | 디버거 | HSLink (CMSIS-DAP). 가상 시리얼이 보드 UART1(P707/P706)에도 연결됨 |
-| 펌웨어 | `firmware/ra8p1-fw` — CM85 부팅 + **RGB LED · UART · CLI 동작 확인** |
+| 펌웨어 | `firmware/ra8p1-fw` — CM85 부팅 + **LED · UART · CLI · FreeRTOS · 모듈 구조 동작 확인** |
 | FSP | v6.6.0, RASC 생성물 커밋 방식. 보드는 `board.custom` |
-| 빌드 | FLASH 25,912 B / 1 MB (2.47%) · RAM 8,200 B / 1872 KB (0.43%) |
+| 빌드 | FLASH 38,248 B / 1 MB (3.65%) · RAM 78,332 B / 1872 KB (4.09%) |
+| RTOS | FreeRTOS 11.1.0 (heap_4 64 KB) · 모듈 자동 등록(`.module` 섹션) · 이벤트 버스 |
 | 콘솔 | **SCI2 (P801/P802, H1 커넥터)** ← HSLink 가상 시리얼. 115200 8N1 |
 | 클럭 | **1000 MHz** (Cortex-M85) |
 | CM33 | 스켈레톤. `BUILD_CM33=OFF` |
@@ -36,9 +37,11 @@ VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
 
 ### 다음 작업
 
-1. **FreeRTOS** — 이후 FatFs·lwIP·USB·LVGL 이 전부 전제하므로 일찍 넣는다. 포트는 FSP `rm_freertos_port` ([22](22-freertos.md) 예정)
-2. **CM33 기동** — 파티션 매크로를 직접 정의해야 한다 ([04장 3절](04-dualcore.md#3-파티션-매크로를-직접-정의해야-한다))
-3. GPIO / 버튼 / swtimer → MRAM / NVS → OSPI 플래시 → SDRAM → SD/FatFs
+1. **CM33 기동** — 파티션 매크로를 직접 정의해야 한다 ([04장 3절](04-dualcore.md#3-파티션-매크로를-직접-정의해야-한다))
+2. GPIO / 버튼 / swtimer
+3. **MRAM + NVS** — 여기서 ITCM 재배치를 실측해 부트로더의 위험을 미리 없앤다
+4. **USB** — CDC 를 두 번째 CLI 채널로. TinyUSB 포팅 유무를 여기서 판정한다
+5. OSPI 플래시 → SDRAM → SD/FatFs → I2C/IMU → SPI → 오디오
 
 ### 미해결 과제
 
@@ -86,28 +89,44 @@ VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
 |---|---|---|---|
 | [20-led.md](20-led.md) | RGB LED + 빌드/적재/검증 루프 | — | ✅ |
 | [21-uart-cli.md](21-uart-cli.md) | UART(SCI2) + log/cli | `weact-h750-mini`, `qmk-link` cli.c, `ti-am263` log.c | ✅ |
-| `22-freertos.md` | FreeRTOS + 스레드 OSAL | `stm32h7-lvgl` `bsp/rtos/`, FSP `rm_freertos_port` | 예정 |
+| [22-freertos.md](22-freertos.md) | FreeRTOS + 모듈/스레드 구조 + 이벤트 버스 | `stm32h7-lvgl` `bsp/rtos/`, `NUCLEO-C5A3ZG` `ap/modules/`, `NU87-TinyDK` event.c | ✅ |
 | `23-cm33-boot.md` | CM33 기동, 코어간 IPC | FSP `bsp_ipc.c`, `NU87-TinyDK` ipc.c | 예정 |
 | `24-gpio-button-swtimer.md` | GPIO / 버튼 / 소프트타이머 | `weact-h750-mini`, `qmk-link` | 예정 |
-| `25-mram-nvs.md` | 내부 MRAM R/W + 설정 저장 | `NU87-TinyDK` nvs.c, FSP `mram` 예제 | 예정 |
-| `26-ospi-flash.md` | OSPI NOR (W25Q64 8 MB, CS1) | `weact-h750-mini` qspi.c, FSP `ospi_b` 예제 | 예정 |
-| `27-sdram.md` | SDRAM 32 MB + 힙 | `stm32h7-lvgl` sdram.c·mem.c | 예정 |
-| `28-sdcard-fatfs.md` | SDHI + FatFs + 파일 API | `stm32h7-lvgl` sd.c·fatfs.c·fs.c·files.c | 예정 |
-| `29-i2c-imu.md` | I2C + LSM6DS3TR-C | `stm32h7-lvgl` i2c.c (IMU 는 신규) | 예정 |
-| `30-spi.md` | SPI 마스터 | `weact-h750-mini` spi.c | 예정 |
-| `31-lcd-glcdc.md` | GLCDC RGB565 출력 | `stm32h7-lvgl` ltdc.c·lcd.c | 예정 |
-| `32-touch.md` | 정전식 터치 | `stm32h7-lvgl` touch.c | 예정 |
-| `33-lvgl.md` | LVGL 포팅 | `stm32h7-lvgl` lvgl.c | 예정 |
-| `34-audio.md` | I2S DAC + PDM 마이크 + 믹서 | `stm32h7-lvgl` i2s.c·pdm.c·mixer.c | 예정 |
-| `35-usb.md` | USB CDC / MSC | `weact-h750-mini` usb/ | 예정 |
-| `40-bootloader.md` | **부트로더** (RTOS 없음, TinyUSB) | `weact-h750-boot` 전체 | 예정 |
+| `25-mram-nvs.md` | 내부 MRAM R/W + 설정 저장 **+ ITCM 재배치 실측** | `NU87-TinyDK` nvs.c, FSP `mram` 예제 | 예정 |
+| `26-usb.md` | USB CDC / MSC | `weact-h750-mini` usb/ | 예정 |
+| `27-ospi-flash.md` | OSPI NOR (W25Q64 8 MB, CS1, 쿼드) | `weact-h750-mini` qspi.c, FSP `ospi_b` 예제 | 예정 |
+| `28-sdram.md` | SDRAM 32 MB + 힙 | `stm32h7-lvgl` sdram.c·mem.c | 예정 |
+| `29-sdcard-fatfs.md` | SDHI + FatFs + 파일 API | `stm32h7-lvgl` sd.c·fatfs.c·fs.c·files.c | 예정 |
+| `30-i2c-imu.md` | I2C + LSM6DS3TR-C | `stm32h7-lvgl` i2c.c (IMU 는 신규) | 예정 |
+| `31-spi.md` | SPI 마스터 | `weact-h750-mini` spi.c | 예정 |
+| `32-audio.md` | I2S DAC + PDM 마이크 + 믹서 | `stm32h7-lvgl` i2s.c·pdm.c·mixer.c | 예정 |
+| `40-bootloader.md` | **부트로더** (RTOS 없음, ITCM 실행) | `weact-h750-boot` 전체 | 예정 |
 | `41-fw-update.md` | 섹션 컨테이너 이미지 · 롤백 | 〃 | 예정 |
 | `50-ethernet.md` | 기가비트 이더넷 + lwIP | `NUCLEO-C5A3ZG` eth/ | 예정 |
 | `51-can.md` | CAN FD | `master_prime/rmc-gfx-r2` can.c | 예정 |
 | `52-camera.md` | MIPI CSI / 병렬 CEU | 신규 | 예정 |
 | `53-npu.md` | Ethos-U55 NPU | 신규 | 예정 |
 
-**순서 근거** — UART/CLI 가 이후 모든 검증 수단이라 먼저다. FreeRTOS 는 FatFs·lwIP·USB·LVGL 이 전부 전제하므로 일찍 넣는다(늦게 넣으면 만든 드라이버를 스레드 안전하게 다시 손봐야 한다). CM33 은 링커 파티션이 구조에 영향을 주므로 앞쪽. SDRAM 이 LCD 프레임버퍼·LVGL·카메라의 전제, SD/FatFs 가 파일 기반 기능의 전제다. 부트로더는 MRAM·OSPI·USB 가 갖춰진 뒤이고, 그게 생기면 pyOCD 없이 업데이트가 되므로 개발 사이클이 긴 대형 기능을 그 뒤로 미룬다.
+### 하드웨어 대기
+
+LCD 와 터치 패널이 아직 보드에 연결돼 있지 않다. 하드웨어가 준비되면 진행한다.
+
+| 문서 | 기능 | 참조 |
+|---|---|---|
+| `60-lcd-glcdc.md` | GLCDC RGB565 출력 (40핀 FPC, BL=P303) | `stm32h7-lvgl` ltdc.c·lcd.c |
+| `61-touch.md` | 정전식 터치 (I2C1, CTP_IRQ/RST) | `stm32h7-lvgl` touch.c |
+| `62-lvgl.md` | LVGL 포팅 | `stm32h7-lvgl` lvgl.c |
+
+**순서 근거**
+
+- **21 UART/CLI** — 이후 모든 단계의 검증 수단이라 가장 먼저.
+- **22 FreeRTOS** — FatFs·lwIP·USB·LVGL 이 전부 전제한다. 늦게 넣으면 만든 드라이버를 스레드 안전하게 다시 손봐야 한다.
+- **23 CM33** — 링커 파티션이 구조에 영향을 주므로 앞쪽.
+- **25 MRAM** — 여기서 **ITCM 재배치를 실측**한다. `.itcm_code_from_flash` 에 넣은 함수가 실제로 ITCM 으로 복사돼 실행되는지, 인터럽트를 끈 상태에서 MRAM 기록이 완료되는지. 부트로더의 유일한 미확인 위험을 부트로더를 만들기 전에 없앤다.
+- **26 USB — 앞당겼다.** 펌웨어 안에서 하면 CLI·로그·RTOS 를 쓸 수 있어 훨씬 쉽고, "RA8P1 에 TinyUSB 포팅이 있는가, 아니면 FSP `r_usb_basic` 인가" 라는 부트로더 설계의 전제를 여기서 답한다.
+- **28 SDRAM** 이 카메라(52)·LCD 프레임버퍼(60)의 전제, **29 SD/FatFs** 가 파일 기반 기능의 전제다.
+- **40·41 부트로더 — 뒤에 둔다.** 아무것도 부트로더에 의존하지 않는다. 반면 부트로더가 생기는 순간 메모리 배치가 고정되고(파티션 크기는 아직 초안이다), `src/common` 과 FSP 트리가 peer 프로젝트로 복제돼 유지보수 면적이 두 배가 된다. 드라이버 계층이 아직 움직이는 지금이 가장 나쁜 시점이다. `cmake --build build --target flash` 가 3초면 끝나서 개발 편의 이득도 생각보다 작다.
+- **60~62 LCD / 터치 / LVGL** — 하드웨어 미연결. 준비되면 진행한다.
 
 ## 그림
 

@@ -10,6 +10,8 @@ bool hwInit(void)
   //
   cliInit();
   logInit();
+  threadInit();
+  eventInit();
 
   ledInit();
   uartInit();

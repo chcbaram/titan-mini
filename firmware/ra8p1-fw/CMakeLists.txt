@@ -64,6 +64,23 @@ file(GLOB_RECURSE RA_SDK_SRC_FILES CONFIGURE_DEPENDS
   ${RA_SDK_DIR}/ra/fsp/src/r_sci_b_uart/*.c
   )
 
+# FreeRTOS 커널. RASC 가 ra/aws 로 가져온 것을 쓴다.
+#   포트 레이어는 FSP 의 rm_freertos_port 다. 직접 포팅하지 않는다.
+#   heap 은 heap_4 (병합 가능한 free 리스트). configuration.xml 에서 고른다.
+#
+set(FREERTOS_DIR ${RA_SDK_DIR}/ra/aws/FreeRTOS/FreeRTOS/Source)
+
+file(GLOB FREERTOS_SRC_FILES CONFIGURE_DEPENDS
+  ${FREERTOS_DIR}/*.c
+  ${FREERTOS_DIR}/portable/MemMang/heap_4.c
+  ${RA_SDK_DIR}/ra/fsp/src/rm_freertos_port/*.c
+  )
+
+list(APPEND SHARED_INC_DIRS
+  ${FREERTOS_DIR}/include
+  ${RA_SDK_DIR}/ra/fsp/src/rm_freertos_port
+  )
+
 
 add_subdirectory(src/cpu/cm85)
 

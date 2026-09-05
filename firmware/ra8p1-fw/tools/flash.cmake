@@ -22,7 +22,11 @@ if(NOT RA_DFP_PACK AND DEFINED ENV{RENESAS_RA_TOOLS})
   if(_packs)
     list(SORT _packs)
     list(REVERSE _packs)
-    list(GET _packs 0 RA_DFP_PACK)
+    list(GET _packs 0 _found_pack)
+
+    # 캐시에 박아 둔다. glob 이 바뀌면 CMake 가 환경변수 없이 재configure 하는데,
+    # 그때 경로를 잃어버리면 flash 타겟이 조용히 죽는다.
+    set(RA_DFP_PACK "${_found_pack}" CACHE FILEPATH "Renesas RA DFP CMSIS pack (수정본)" FORCE)
   endif()
 endif()
 
