@@ -4,7 +4,7 @@
 #ifdef _USE_HW_RTOS
 
 #include "log.h"
-#include "display.h"
+#include "indicator.h"
 
 
 bool rtosInit(void)
@@ -25,7 +25,7 @@ bool rtosIsRunning(void)
  * 지표다. 정확한 수치는 CLI 의 thread cpu 로 보지만, CPU 가 꽉 차면 CLI 스레드도
  * 같이 굶어서 명령이 안 먹는다. 그래서 둘 다 필요하다.
  *
- * 무엇을 어떻게 표시할지는 display 모듈이 정한다. 여기서는 주기만 잰다.
+ * 무엇을 어떻게 표시할지는 indicator 모듈이 정한다. 여기서는 주기만 잰다.
  * 아이들 훅은 절대 블로킹하면 안 된다.
  */
 void vApplicationIdleHook(void)
@@ -37,7 +37,7 @@ void vApplicationIdleHook(void)
   if ((cur_tick - pre_tick) >= pdMS_TO_TICKS(500))
   {
     pre_tick = cur_tick;
-    displayHeartbeat();
+    indicatorHeartbeat();
   }
 }
 

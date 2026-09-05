@@ -55,7 +55,7 @@ target_include_directories(${EXECUTABLE} PRIVATE
   ${CORE_DIR}
   ${CORE_DIR}/ap
   ${CORE_DIR}/ap/modules
-  ${CORE_DIR}/ap/modules/common/display
+  ${CORE_DIR}/ap/modules/common/indicator
   ${CORE_DIR}/bsp
   ${CORE_DIR}/bsp/rtos
   ${CORE_DIR}/hw

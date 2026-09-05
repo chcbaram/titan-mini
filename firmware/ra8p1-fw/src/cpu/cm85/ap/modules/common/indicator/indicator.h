@@ -1,5 +1,5 @@
-#ifndef DISPLAY_H_
-#define DISPLAY_H_
+#ifndef INDICATOR_H_
+#define INDICATOR_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -9,7 +9,9 @@ extern "C" {
 
 
 /*
- * 보드의 표시 장치를 한곳에서 관리한다.
+ * 상태 표시등.
+ *
+ * 시스템 상태를 사람이 볼 수 있게 바꾸는 정책을 한곳에 모은다.
  *
  * 드라이버(led.c)는 채널을 켜고 끄는 일만 하고, "언제 무슨 색으로 무엇을 알릴지" 는
  * 이 모듈이 정한다. 나중에 LCD 상태 표시나 부저가 붙어도 정책은 여기 모은다.
@@ -25,16 +27,16 @@ extern "C" {
  */
 typedef enum
 {
-  DISPLAY_STATE_BOOT = 0,   // 부팅 중
-  DISPLAY_STATE_RUN,        // 정상 동작
-  DISPLAY_STATE_BUSY,       // 오래 걸리는 작업 중
-  DISPLAY_STATE_ERROR,      // 오류
-  DISPLAY_STATE_MAX,
-} DisplayState_t;
+  INDICATOR_STATE_BOOT = 0,   // 부팅 중
+  INDICATOR_STATE_RUN,        // 정상 동작
+  INDICATOR_STATE_BUSY,       // 오래 걸리는 작업 중
+  INDICATOR_STATE_ERROR,      // 오류
+  INDICATOR_STATE_MAX,
+} IndicatorState_t;
 
 
-void           displaySetState(DisplayState_t state);
-DisplayState_t displayGetState(void);
+void           indicatorSetState(IndicatorState_t state);
+IndicatorState_t indicatorGetState(void);
 
 /*
  * 하트비트 한 틱.
@@ -42,7 +44,7 @@ DisplayState_t displayGetState(void);
  * FreeRTOS 아이들 훅이 부른다. 아이들은 CPU 가 남을 때만 실행되므로 점멸 자체가
  * "여유가 있다" 는 표시가 된다. 호출자가 주기를 재고, 이 함수는 표시만 갱신한다.
  */
-void displayHeartbeat(void);
+void indicatorHeartbeat(void);
 
 
 #ifdef __cplusplus

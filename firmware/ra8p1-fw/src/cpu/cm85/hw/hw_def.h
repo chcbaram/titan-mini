@@ -54,7 +54,7 @@
 #define _USE_CLI_HW_THREAD           1
 #define _USE_CLI_HW_EVENT            1
 #define _USE_CLI_HW_MODULE           1
-#define _USE_CLI_HW_DISPLAY          1
+#define _USE_CLI_HW_INDICATOR          1
 
 
 #endif

@@ -235,7 +235,7 @@ CMake 의 `-T` 를 이쪽으로 돌리고, `INCLUDE` 가 찾을 수 있게 `ra_s
 > 참조 프로젝트는 `volatile` 로 선언하고 `.data` 안에 섹션을 넣어 해결했지만,
 > 우리는 그 출력 섹션을 손댈 수 없다.
 
-### 표시는 display 모듈이, 주기는 아이들 훅이
+### 표시는 indicator 모듈이, 주기는 아이들 훅이
 
 LED 를 어디서 깜빡일지에 세 가지 후보가 있었다.
 
@@ -256,7 +256,7 @@ void vApplicationIdleHook(void)
   if ((cur_tick - pre_tick) >= pdMS_TO_TICKS(500))
   {
     pre_tick = cur_tick;
-    displayHeartbeat();      // 무엇을 표시할지는 display 모듈이 정한다
+    indicatorHeartbeat();      // 무엇을 표시할지는 indicator 모듈이 정한다
   }
 }
 ```
@@ -275,28 +275,28 @@ eventPub(EVENT_ETH_LINK, is_up);
 ```
 
 ```c
-// display 모듈이 구독해서 표시를 정한다. 디스크립터에 event_cb 만 적으면
+// indicator 모듈이 구독해서 표시를 정한다. 디스크립터에 event_cb 만 적으면
 // moduleInit() 이 자동으로 등록한다.
-MODULE_DEF(display)
+MODULE_DEF(indicator)
 {
-  .name     = "display",
+  .name     = "indicator",
   .priority = MODULE_PRI_HIGH,
   .init     = displayInit,
-  .event_cb = displayEvent,
+  .event_cb = indicatorEvent,
 };
 
-static bool displayEvent(event_t *p_evt)
+static bool indicatorEvent(event_t *p_evt)
 {
   switch (p_evt->code)
   {
     case EVENT_ETH_LINK:
       is_link = (p_evt->data != 0);
-      if (is_link) ledOn(DISPLAY_LED_LINK);
-      else         ledOff(DISPLAY_LED_LINK);
+      if (is_link) ledOn(INDICATOR_LED_LINK);
+      else         ledOff(INDICATOR_LED_LINK);
       break;
 
-    case EVENT_ERROR:     displaySetState(DISPLAY_STATE_ERROR); break;
-    case EVENT_BOOT_DONE: displaySetState(DISPLAY_STATE_RUN);   break;
+    case EVENT_ERROR:     indicatorSetState(INDICATOR_STATE_ERROR); break;
+    case EVENT_BOOT_DONE: indicatorSetState(INDICATOR_STATE_RUN);   break;
     default: break;
   }
   return true;
@@ -341,7 +341,7 @@ queue : 0 / 16
 pub   : 1
 drop  : 0
 
-0 : displayEvent
+0 : indicatorEvent
 ```
 
 큐가 넘치면 조용히 버리지 않고 `drop` 을 센다.
@@ -351,7 +351,7 @@ CLI 로 이벤트를 흉내 낼 수 있어서 하드웨어 없이 구독자를 �
 ```
 cli# event pub 3 1        # EVENT_ETH_LINK, up
 [  ] Event cli : 1
-cli# display info
+cli# indicator info
 state : RUN
 link  : up
 ```
