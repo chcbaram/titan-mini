@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 560" width="760" height="560" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif">
+  <style>
+    .addr { font-size: 12px; fill: #6b7280; font-family: ui-monospace, Menlo, Consolas, monospace; }
+    .name { font-size: 14px; font-weight: 600; }
+    .sub  { font-size: 11.5px; fill: #6b7280; }
+    .ttl  { font-size: 15px; font-weight: 700; fill: #374151; }
+    .box  { stroke-width: 1.5; }
+  </style>
+
+  <text x="20" y="26" class="ttl">RA8P1 (R7KA8P1KFLCAC) 주소 공간</text>
+
+  <!-- 코드/TCM -->
+  <rect x="20"  y="48" width="330" height="60" rx="5" class="box" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="34" y="70"  class="name" fill="#1d4ed8">ITCM / CTCM</text>
+  <text x="34" y="88"  class="sub">CPU0 ITCM 128 KB · CPU1 CTCM 64 KB</text>
+  <text x="34" y="103" class="sub">코어별로 자기 TCM 만 보인다</text>
+  <text x="270" y="70" class="addr" text-anchor="end">0x0000_0000</text>
+
+  <rect x="20"  y="120" width="330" height="86" rx="5" class="box" fill="#fef3c7" stroke="#d97706"/>
+  <text x="34" y="142"  class="name" fill="#b45309">MRAM (FLASH)  1 MB</text>
+  <text x="34" y="160"  class="sub">코드 NVM. 리셋 후 여기서 바로 실행</text>
+  <text x="34" y="176"  class="sub">비보안 별칭 0x1200_0000</text>
+  <text x="34" y="194"  class="sub">Extra MRAM 0x02C9_F000 · OTP 0x02E0_7600</text>
+  <text x="336" y="142" class="addr" text-anchor="end">0x0200_0000</text>
+
+  <rect x="20"  y="218" width="330" height="52" rx="5" class="box" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="34" y="240"  class="name" fill="#1d4ed8">DTCM / STCM</text>
+  <text x="34" y="258"  class="sub">CPU0 DTCM 128 KB · CPU1 STCM 64 KB</text>
+  <text x="336" y="240" class="addr" text-anchor="end">0x2000_0000</text>
+
+  <rect x="20"  y="282" width="330" height="66" rx="5" class="box" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="34" y="304"  class="name" fill="#15803d">SRAM  1872 KB</text>
+  <text x="34" y="322"  class="sub">0x001D_4000 — 두 코어가 나눠 쓴다</text>
+  <text x="34" y="338"  class="sub">DFP·데이터시트의 1664 KB 는 틀린 값</text>
+  <text x="336" y="304" class="addr" text-anchor="end">0x2200_0000</text>
+
+  <rect x="20"  y="360" width="330" height="40" rx="5" class="box" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="34" y="385"  class="name" fill="#4b5563">주변장치  ·  CPU_CTRL 0x4000_F000  ·  PORT 0x4040_0000</text>
+
+  <!-- 외부 메모리 -->
+  <text x="410" y="42" class="ttl">외부 메모리 창</text>
+
+  <rect x="410" y="56" width="330" height="52" rx="5" class="box" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="424" y="78"  class="name" fill="#4b5563">OSPI1 CS0 / CS1</text>
+  <text x="424" y="96"  class="sub">각 128 MB · 이 보드에서는 미사용</text>
+  <text x="726" y="78"  class="addr" text-anchor="end">0x7000_0000</text>
+
+  <rect x="410" y="120" width="330" height="66" rx="5" class="box" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="424" y="142" class="name" fill="#6d28d9">SDRAM  창 128 MB</text>
+  <text x="424" y="160" class="sub">보드 실장 32 MB — W9825G6KH-6 (16bit)</text>
+  <text x="424" y="176" class="sub">프레임버퍼 · 카메라 · 오디오 버퍼가 여기로</text>
+  <text x="726" y="142" class="addr" text-anchor="end">0x6800_0000</text>
+
+  <rect x="410" y="198" width="330" height="40" rx="5" class="box" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="424" y="223" class="name" fill="#4b5563">OSPI0 CS0  ·  미사용</text>
+  <text x="726" y="223" class="addr" text-anchor="end">0x8000_0000</text>
+
+  <rect x="410" y="250" width="330" height="66" rx="5" class="box" fill="#fce7f3" stroke="#db2777"/>
+  <text x="424" y="272" class="name" fill="#be185d">OSPI0 CS1</text>
+  <text x="424" y="290" class="sub">W25Q64JVSSIQ  8 MB NOR</text>
+  <text x="424" y="306" class="sub">펌웨어 스테이징 · 롤백 백업 · 리소스</text>
+  <text x="726" y="272" class="addr" text-anchor="end">0x9000_0000</text>
+
+  <rect x="410" y="336" width="330" height="64" rx="5" fill="none" stroke="#d1d5db" stroke-dasharray="4 3"/>
+  <text x="424" y="357" class="sub" font-weight="600" fill="#4b5563">RA8P1 에는 QSPI 페리페럴이 없다</text>
+  <text x="424" y="374" class="sub">BSP_FEATURE_QSPI_IS_AVAILABLE = 0</text>
+  <text x="424" y="390" class="sub">회로도의 QSPI_* 네트는 실제로 OSPI0 OM_0 이다</text>
+
+  <!-- 하단 노트 -->
+  <line x1="20" y1="424" x2="740" y2="424" stroke="#e5e7eb"/>
+  <text x="20" y="448" class="sub" font-weight="600" fill="#4b5563">CPU0 초기 벡터 0x0200_0000 은 하드웨어 고정이다 (Table 2.6).</text>
+  <text x="20" y="466" class="sub">부트로더를 도입하면 반드시 MRAM 맨 앞을 차지한다.</text>
+  <text x="20" y="490" class="sub" font-weight="600" fill="#4b5563">CPU1 벡터는 128 바이트 정렬 필수 — CPU1INITVTOR[6:0] 은 쓰기가 버려진다 (2.9.1.7).</text>
+  <text x="20" y="514" class="sub">DATA_FLASH 는 이 품번에 없다 (길이 0).</text>
+  <text x="20" y="538" class="sub">출처: RASC 생성 memory_regions.ld + 하드웨어 매뉴얼 메모리 맵</text>
+</svg>

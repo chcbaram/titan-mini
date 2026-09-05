@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 520" width="760" height="520" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif">
+  <style>
+    .m   { font-size: 11.5px; font-family: ui-monospace, Menlo, Consolas, monospace; fill: #6b7280; }
+    .b   { font-size: 13.5px; font-weight: 600; }
+    .s   { font-size: 11.5px; fill: #6b7280; }
+    .ttl { font-size: 15px; font-weight: 700; fill: #374151; }
+  </style>
+  <defs>
+    <marker id="au" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9ca3af"/>
+    </marker>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <text x="20" y="26" class="ttl">펌웨어 업데이트 흐름</text>
+
+  <!-- 부팅 판정 -->
+  <rect x="20" y="46" width="230" height="120" rx="5" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="34" y="68" class="b" fill="#4b5563">부팅 판정</text>
+  <text x="34" y="90"  class="s">정상 리셋 + 유효 이미지</text>
+  <text x="34" y="106" class="s">   → USB 를 열지 않고 바로 점프</text>
+  <text x="34" y="126" class="s">더블클릭 리셋 / 앱 요청 / 이미지 없음</text>
+  <text x="34" y="142" class="s">   → 부트로더에 머무름</text>
+  <text x="34" y="160" class="s">weact-h750-boot 의 판정을 그대로 쓴다</text>
+
+  <line x1="135" y1="168" x2="135" y2="192" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#au)"/>
+
+  <!-- 1 수신 -->
+  <rect x="20" y="194" width="230" height="70" rx="5" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="34" y="216" class="b" fill="#1d4ed8">① 수신</text>
+  <text x="34" y="236" class="s">USB CDC / MSC(UF2) 또는 UART</text>
+  <text x="34" y="254" class="s">TinyUSB bare-metal · RTOS 없음</text>
+
+  <line x1="254" y1="229" x2="290" y2="229" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#au)"/>
+
+  <!-- 2 스테이징 -->
+  <rect x="292" y="194" width="230" height="70" rx="5" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="306" y="216" class="b" fill="#be185d">② QSPI 스테이징</text>
+  <text x="306" y="236" class="s">W25Q64 8 MB · OSPI0 CS1</text>
+  <text x="306" y="254" class="m">0x9000_0000</text>
+
+  <line x1="526" y1="229" x2="562" y2="229" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#au)"/>
+
+  <!-- 3 검증 -->
+  <rect x="564" y="194" width="176" height="70" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="578" y="216" class="b" fill="#b45309">③ 검증</text>
+  <text x="578" y="236" class="s">헤더 magic · 전체 CRC</text>
+  <text x="578" y="254" class="s">섹션별 CRC</text>
+
+  <line x1="652" y1="266" x2="652" y2="292" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#au)"/>
+
+  <!-- 4 기록 -->
+  <rect x="292" y="294" width="448" height="86" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="306" y="316" class="b" fill="#15803d">④ 섹션별로 MRAM 기록</text>
+  <text x="306" y="336" class="s">sec0 → 0x0202_0000 (CPU0_FW)   ·   sec1 → 0x020C_0000 (CPU1_FW)</text>
+  <text x="306" y="356" class="s">r_mram · 32 바이트 단위 · 쓰기 루틴과 벡터를 ITCM/SRAM 으로 옮겨 실행</text>
+  <text x="306" y="373" class="s">기록 전에 이전 이미지를 QSPI 백업 슬롯으로 복사해 둔다</text>
+
+  <line x1="292" y1="337" x2="256" y2="337" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#au)"/>
+
+  <!-- 5 점프 -->
+  <rect x="20" y="294" width="230" height="86" rx="5" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="34" y="316" class="b" fill="#6d28d9">⑤ CPU0 펌웨어로 점프</text>
+  <text x="34" y="336" class="s">CPU0 가 R_BSP_SecondaryCoreStart()</text>
+  <text x="34" y="352" class="s">로 CPU1 을 깨운다</text>
+  <text x="34" y="372" class="s">부트로더는 여기서 손을 뗀다</text>
+
+  <!-- 롤백 -->
+  <path d="M652,266 L652,282 L756,282 L756,410 L200,410 L200,384" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ar)"/>
+  <text x="470" y="404" class="s" fill="#dc2626" text-anchor="middle">검증 실패 · 기록 실패 → QSPI 백업 슬롯으로 롤백</text>
+
+  <line x1="20" y1="432" x2="740" y2="432" stroke="#e5e7eb"/>
+  <text x="20" y="456" class="s"><tspan font-weight="600" fill="#4b5563">왜 QSPI 에 스테이징하나</tspan> — MRAM 1 MB 에는 A/B 슬롯이 안 들어간다. dual bank 도 block swap 도 없다.</text>
+  <text x="20" y="476" class="s">8 MB NOR 이 보드에 이미 있으니 스테이징·백업·리소스를 전부 거기 둔다.</text>
+  <text x="20" y="500" class="s"><tspan font-weight="600" fill="#4b5563">MRAM RWW 제약</tspan> — 같은 뱅크에 대한 read 와 program 은 동시에 안 된다. 40번 단계 전에 검증이 필요하다.</text>
+</svg>

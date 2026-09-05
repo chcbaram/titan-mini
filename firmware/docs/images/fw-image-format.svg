@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 450" width="740" height="450" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif">
+  <style>
+    .m   { font-size: 12px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+    .b   { font-size: 13.5px; font-weight: 600; }
+    .s   { font-size: 11.5px; fill: #6b7280; }
+    .ttl { font-size: 15px; font-weight: 700; fill: #374151; }
+  </style>
+  <defs>
+    <marker id="af" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9ca3af"/>
+    </marker>
+  </defs>
+
+  <text x="20" y="26" class="ttl">펌웨어 이미지 — 섹션 컨테이너</text>
+  <text x="20" y="46" class="s">CPU0 · CPU1 을 한 파일로 묶되 내부는 섹션 목록이다. 섹션 하나짜리 이미지도 같은 부트로더로 처리된다.</text>
+
+  <!-- 헤더 -->
+  <rect x="20" y="66" width="330" height="86" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="34" y="88"  class="b" fill="#b45309">이미지 헤더</text>
+  <text x="34" y="108" class="m" fill="#6b7280">magic       "TMFW"</text>
+  <text x="34" y="124" class="m" fill="#6b7280">fw_version  "V260905R1"</text>
+  <text x="34" y="140" class="m" fill="#6b7280">section_cnt  2      total_crc</text>
+
+  <!-- 섹션 테이블 -->
+  <rect x="20" y="160" width="330" height="86" rx="5" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="34" y="182" class="b" fill="#1d4ed8">섹션 테이블</text>
+  <text x="34" y="202" class="m" fill="#6b7280">sec0  CPU0_FW  0x0202_0000  len  crc</text>
+  <text x="34" y="218" class="m" fill="#6b7280">sec1  CPU1_FW  0x020C_0000  len  crc</text>
+  <text x="34" y="238" class="s">type · 목적지 주소 · 길이 · CRC</text>
+
+  <!-- payload -->
+  <rect x="20" y="254" width="330" height="76" rx="5" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="34" y="276" class="b" fill="#4b5563">payload</text>
+  <text x="34" y="296" class="m" fill="#6b7280">titan-mini-cm85.bin</text>
+  <text x="34" y="312" class="m" fill="#6b7280">titan-mini-cm33.bin</text>
+
+  <!-- 화살표 -->
+  <line x1="356" y1="200" x2="404" y2="200" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#af)"/>
+
+  <!-- MRAM -->
+  <text x="410" y="60" class="b" fill="#4b5563">MRAM 배치 결과</text>
+
+  <rect x="410" y="66" width="310" height="48" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="424" y="88"  class="b" fill="#b91c1c">BOOT  128 KB</text>
+  <text x="424" y="106" class="s">이미지에 포함되지 않는다 — 자기 자신은 못 지운다</text>
+
+  <rect x="410" y="122" width="310" height="48" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="424" y="144" class="b" fill="#15803d">CPU0_FW  640 KB</text>
+  <text x="424" y="162" class="s">← sec0</text>
+
+  <rect x="410" y="178" width="310" height="48" rx="5" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="424" y="200" class="b" fill="#be185d">CPU1_FW  256 KB</text>
+  <text x="424" y="218" class="s">← sec1</text>
+
+  <rect x="410" y="246" width="310" height="84" rx="5" fill="none" stroke="#d1d5db" stroke-dasharray="4 3"/>
+  <text x="424" y="268" class="s" font-weight="600" fill="#4b5563">왜 통짜 바이너리가 아닌가</text>
+  <text x="424" y="288" class="s">· 파티션 사이 빈 공간을 전송하지 않아도 된다</text>
+  <text x="424" y="306" class="s">· 나중에 코어 하나만 교체하는 경로가 열려 있다</text>
+  <text x="424" y="324" class="s">· 섹션별 CRC 로 어디가 깨졌는지 알 수 있다</text>
+
+  <line x1="20" y1="352" x2="720" y2="352" stroke="#e5e7eb"/>
+  <text x="20" y="376" class="s"><tspan font-weight="600" fill="#4b5563">생성</tspan> — CMake POST_BUILD 에서 tools/mkimage.py (python3). OS 전용 스크립트를 두지 않기 위해서다.</text>
+  <text x="20" y="398" class="s"><tspan font-weight="600" fill="#4b5563">버전 결합</tspan> — 두 코어 펌웨어는 IPC 프로토콜로 강하게 묶인다. 한 파일로 원자적으로 갱신하면</text>
+  <text x="20" y="416" class="s">버전 불일치를 애초에 만들 수 없다.</text>
+  <text x="20" y="440" class="s"><tspan font-weight="600" fill="#4b5563">서명</tspan> — 필요해지면 헤더에 필드를 추가한다. 지금은 CRC 만 쓴다.</text>
+</svg>
