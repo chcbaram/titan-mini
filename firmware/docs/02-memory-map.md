@@ -65,21 +65,40 @@
 | 블록 보호 | `MRCPC0` / `MRCPC1`, permanent block protect, `FSPR` 로 `BTFLG`/`BTSIZE`/`MSUACR` 보호 |
 | FSP 드라이버 | `r_mram` — `R_MRAM_Open/Write/Erase/BlankCheck`, `g_flash_on_mram` (`flash_api_t`) |
 
-> ### 함정 — RWW(Read-While-Write) 는 뱅크가 갈릴 때만 된다
+> ### 결정적 제약 — MRAM 은 듀얼뱅크가 아니다
 >
 > 매뉴얼 60.13.2 (Parallel Accessibility):
 >
-> - BGO 는 **서로 다른 MRAM 뱅크 사이에서만** 가능하다.
+> - BGO(Background Operation)는 **서로 다른 MRAM 뱅크 사이에서만** 가능하다.
 > - **같은 MRAM 매크로에 대한 read 와 program 은 중재되어 동시에 실행되지 않는다.**
 > - 코드 MRAM ↔ Extra MRAM(옵션 영역) 사이는 서로 read/program 이 된다.
 > - 프로그래밍 중 인터럽트/예외가 걸리면 코드 MRAM 에서 벡터를 못 읽는다. 매뉴얼 권고는
 >   "벡터 주소를 코드 MRAM 밖으로 옮기거나, 프로그래밍 중에는 인터럽트/예외 처리를 하지 말 것" 이다.
 >
-> → 부트로더가 자기와 같은 뱅크를 쓰려면 **쓰기 루틴과 벡터 테이블을 ITCM/SRAM 으로 옮겨 실행**해야 한다.
+> RA8P1 에는 뱅크가 하나뿐이므로 **BGO 를 쓸 수 없다.** 즉 MRAM 에서 코드를 실행하면서
+> MRAM 을 쓰는 것이 아예 불가능하다. 명령 인출이 프로그래밍 완료까지 막히기 때문에,
+> 폴링 루프 자체가 다음 명령을 못 읽고 멈춘다.
 >
-> 참고로 FSP 의 `r_mram.c` 는 `r_flash_hp` 와 달리 `PLACE_IN_RAM_SECTION` 을 하나도 쓰지 않는다.
-> 뱅크가 나뉘어 BGO 가 되는 것을 전제한 것으로 보이는데, 실제 배치에서 검증이 필요하다.
-> 40번(부트로더) 단계의 선결 과제다.
+> **→ MRAM 을 쓰는 코드는 반드시 RAM(ITCM/DTCM/SRAM)에서 실행해야 한다.**
+> 부트로더는 본체를 통째로 ITCM 으로 옮긴다. 설계는 [05-boot-architecture.md](05-boot-architecture.md#6-부트로더는-itcm-에서-실행한다) 에 있다.
+
+### FSP 링커가 코드 재배치를 이미 지원한다
+
+`fsp_gen.ld` 에 MRAM(FLASH)에서 **로드**하고 ITCM/DTCM/SRAM 에서 **실행**하는 섹션이 정의돼 있다.
+
+```
+__itcm_from_flash$$ : { *(.itcm_from_flash) *(.itcm_code_from_flash) } > ITCM AT > FLASH
+__dtcm_from_flash$$ : { *(.dtcm_from_flash) *(.dtcm_code_from_flash) } > DTCM AT > FLASH
+__ram_from_flash$$  : { *(.ram_from_flash)  *(.ram_code_from_flash)  } > RAM  AT > FLASH
+```
+
+`bsp_linker_info.h` 의 `bsp_init_copy_info_t` 테이블에 이 `$$Base` / `$$Limit` / `$$Load` 심볼이 들어가고, `SystemInit()` 안의 `SystemRuntimeInit()` 이 `main()` 전에 복사를 끝낸다. `.data` 를 복사하는 것과 같은 메커니즘이다.
+
+따라서 별도의 부팅 스텁을 손으로 만들 필요가 없다. 소스에 섹션 속성만 붙이면 된다.
+
+```c
+#define BOOT_CODE   __attribute__((section(".itcm_code_from_flash")))
+```
 
 그 밖의 제약:
 
@@ -95,7 +114,7 @@
 
 | 영역 | 시작 | 크기 | 내용 |
 |---|---|---|---|
-| BOOT | `0x0200_0000` | 128 KB | 부트로더 (CPU0). 벡터 + `.version` + 코드. **CPU0 초기 벡터가 하드웨어 고정이라 반드시 맨 앞** |
+| BOOT | `0x0200_0000` | 128 KB | 부트로더 (CPU0). 벡터 + startup + `.version` + **본체 로드이미지**. CPU0 초기 벡터가 하드웨어 고정이라 반드시 맨 앞. 본체는 부팅 시 ITCM 으로 복사돼 거기서 실행된다 |
 | CPU0_FW | `0x0202_0000` | 640 KB | CPU0 펌웨어 |
 | CPU1_FW | `0x020C_0000` | 256 KB | CPU1 펌웨어. `CPU1INITVTOR` 가 여기를 가리킨다 |
 

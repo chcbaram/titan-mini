@@ -55,7 +55,7 @@
   <rect x="292" y="294" width="448" height="86" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
   <text x="306" y="316" class="b" fill="#15803d">④ 섹션별로 MRAM 기록</text>
   <text x="306" y="336" class="s">sec0 → 0x0202_0000 (CPU0_FW)   ·   sec1 → 0x020C_0000 (CPU1_FW)</text>
-  <text x="306" y="356" class="s">r_mram · 32 바이트 단위 · 쓰기 루틴과 벡터를 ITCM/SRAM 으로 옮겨 실행</text>
+  <text x="306" y="356" class="s">r_mram · 32 바이트 단위 · ITCM 에서 실행하며 인터럽트를 끈다</text>
   <text x="306" y="373" class="s">기록 전에 이전 이미지를 QSPI 백업 슬롯으로 복사해 둔다</text>
 
   <line x1="292" y1="337" x2="256" y2="337" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#au)"/>
@@ -74,5 +74,5 @@
   <line x1="20" y1="432" x2="740" y2="432" stroke="#e5e7eb"/>
   <text x="20" y="456" class="s"><tspan font-weight="600" fill="#4b5563">왜 QSPI 에 스테이징하나</tspan> — MRAM 1 MB 에는 A/B 슬롯이 안 들어간다. dual bank 도 block swap 도 없다.</text>
   <text x="20" y="476" class="s">8 MB NOR 이 보드에 이미 있으니 스테이징·백업·리소스를 전부 거기 둔다.</text>
-  <text x="20" y="500" class="s"><tspan font-weight="600" fill="#4b5563">MRAM RWW 제약</tspan> — 같은 뱅크에 대한 read 와 program 은 동시에 안 된다. 40번 단계 전에 검증이 필요하다.</text>
+  <text x="20" y="500" class="s"><tspan font-weight="600" fill="#4b5563">MRAM 은 단일 뱅크</tspan> — read 와 program 이 동시에 안 되므로 부트로더 본체를 통째로 ITCM 에서 실행한다.</text>
 </svg>

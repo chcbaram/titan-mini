@@ -68,21 +68,20 @@ titan-mini.fw
 | ① 수신 | USB CDC / MSC(UF2) 또는 UART |
 | ② 스테이징 | **OSPI0 CS1 의 W25Q64 8 MB** (`0x9000_0000`) 에 통째로 받아 둔다 |
 | ③ 검증 | 헤더 magic · 전체 CRC · 섹션별 CRC |
-| ④ 기록 | 섹션별로 MRAM 에 쓴다. 그 전에 이전 이미지를 QSPI 백업 슬롯으로 복사 |
+| ④ 기록 | 섹션별로 MRAM 에 쓴다. **ITCM 에서 실행하며 인터럽트를 끈다**(6장). 그 전에 이전 이미지를 QSPI 백업 슬롯으로 복사 |
 | ⑤ 점프 | CPU0 펌웨어로 넘어가고, CPU0 가 CPU1 을 깨운다 |
 
 검증이나 기록이 실패하면 QSPI 백업 슬롯에서 롤백한다.
 
 **왜 QSPI 에 스테이징하나** — MRAM 1 MB 에는 A/B 슬롯이 안 들어간다. dual bank 도 block swap 도 없다. 8 MB NOR 이 보드에 이미 있으니 스테이징 · 백업 · 리소스를 전부 거기 둔다.
 
-> ### 선결 과제 — MRAM RWW
+> ### MRAM 을 쓰는 코드는 MRAM 에서 실행할 수 없다
 >
-> 같은 MRAM 뱅크에 대한 read 와 program 은 **중재되어 동시에 실행되지 않는다**([02](02-memory-map.md#3-mram-특성)).
-> 부트로더가 자기와 같은 뱅크를 쓰려면 **쓰기 루틴과 벡터 테이블을 ITCM/SRAM 으로 옮겨 실행**해야 한다.
+> RA8P1 의 MRAM 은 **뱅크가 하나뿐이라 BGO 가 불가능하다.** 같은 뱅크의 read 와 program 은
+> 중재되어 동시에 실행되지 않으므로, MRAM 에서 코드를 실행하면서 MRAM 을 쓰면 명령 인출이
+> 막혀 폴링 루프 자체가 멈춘다([02-memory-map.md](02-memory-map.md#3-mram-특성)).
 >
-> FSP 의 `r_mram.c` 는 `r_flash_hp` 와 달리 `PLACE_IN_RAM_SECTION` 을 하나도 쓰지 않는다.
-> 뱅크가 나뉘어 BGO 가 되는 것을 전제한 것으로 보이는데 **실제 배치에서 검증이 필요하다.**
-> 40번 단계를 시작하기 전에 이것부터 확인한다.
+> **→ 부트로더 본체를 통째로 ITCM 에서 실행한다.** 아래 6장.
 
 ## 4. 옵션 설정 영역은 부트로더가 소유한다
 
@@ -116,7 +115,78 @@ titan-mini.fw
 > RA8P1 의 USB 에 TinyUSB 포팅이 있는지는 35번 단계에서 판정한다.
 > 없으면 FSP 의 `r_usb_basic` + PCDC/PMSC 로 가고, UF2 경로는 그때 재설계한다.
 
-## 6. 폴더 구조 — peer 분리
+## 6. 부트로더는 ITCM 에서 실행한다
+
+MRAM 이 듀얼뱅크가 아니므로, MRAM 을 쓰는 코드는 MRAM 밖에서 돌아야 한다.
+쓰기 함수만 골라서 재배치하는 방법도 있지만 **본체를 통째로 옮기는 쪽을 택한다.**
+
+- 어느 함수가 MRAM 을 건드리는지 일일이 감사할 필요가 없다. 콜 그래프가 라이브러리
+  안쪽까지 들어가면 감사가 실질적으로 불가능하다.
+- TinyUSB 의 ISR 과 콜백까지 RAM 에 있으므로, 기록 중 인터럽트를 살려 둘 여지가 생긴다.
+- SRAM 이 1872 KB, ITCM 이 128 KB 다. 128 KB 부트로더를 옮기는 데 아무 부담이 없다.
+- 부트로더는 펌웨어로 넘어가기 전에 손을 떼므로 ITCM 을 점유해도 충돌이 없다.
+
+### 배치
+
+```
+MRAM 0x0200_0000   벡터 테이블 + startup/system + 복사 테이블 + 본체 로드이미지
+ITCM 0x0000_0000   부트로더 본체 (실행)            128 KB
+SRAM 0x2200_0000   다운로드 버퍼 · 스택 · 힙
+```
+
+MRAM 에 남는 것은 리셋 직후 실행되는 최소한이다. CPU0 초기 벡터 `0x0200_0000` 이 하드웨어
+고정이라 벡터와 startup 은 옮길 수 없다. 하지만 이 코드들은 **부팅 시에만 돌고 MRAM 을 쓰지
+않으므로** 문제가 없다.
+
+### FSP 링커가 이미 해 준다
+
+별도의 부팅 스텁을 만들 필요가 없다. `fsp_gen.ld` 에 재배치 섹션이 있고,
+`SystemInit()` 안의 `SystemRuntimeInit()` 이 `bsp_init_copy_info_t` 테이블을 따라
+`main()` 전에 복사를 끝낸다. `.data` 를 복사하는 것과 같은 메커니즘이다.
+
+```
+__itcm_from_flash$$ : { *(.itcm_code_from_flash) } > ITCM AT > FLASH
+__ram_from_flash$$  : { *(.ram_code_from_flash)  } > RAM  AT > FLASH
+```
+
+소스에는 섹션 속성만 붙인다.
+
+```c
+#define BOOT_CODE   __attribute__((section(".itcm_code_from_flash")))
+
+BOOT_CODE bool bootWriteImage(const uint8_t *p_data, uint32_t addr, uint32_t length)
+{
+  ...
+}
+```
+
+CMake 쪽에서 부트로더 소스 전체에 붙이려면 `-ffunction-sections` 로 나온 섹션을
+링커 스크립트에서 몰아넣는 편이 낫다. 40번 단계에서 확정한다.
+
+### 벡터 테이블
+
+기록 중 인터럽트나 예외가 걸리면 MRAM 의 벡터 테이블을 못 읽는다. 두 가지 중 하나를 쓴다.
+
+1. **기록 구간에서 인터럽트를 끈다.** 이미지 수신은 인터럽트를 켠 채 QSPI/SRAM 으로 끝내
+   두고, MRAM 기록 루프만 `__disable_irq()` 로 감싼다. 가장 단순하다.
+2. **벡터 테이블을 RAM 으로 복사하고 `SCB->VTOR` 를 옮긴다.** 기록 중에도 USB 를 살려 둘 수
+   있지만 VTOR 정렬 요구사항을 맞춰야 한다.
+
+1번으로 시작한다. 기록은 짧고, 그 사이 USB 가 멈춰도 호스트 쪽 타임아웃 안에 끝난다.
+
+### 검증
+
+40번 단계를 시작하기 전에 이것부터 확인한다.
+
+- [ ] `.itcm_code_from_flash` 에 넣은 함수가 실제로 ITCM 주소로 링크되는가 (`objdump -t`)
+- [ ] `SystemRuntimeInit()` 이후 그 주소에 코드가 실려 있는가 (디버거로 확인)
+- [ ] 인터럽트를 끈 상태에서 MRAM 기록이 완료되는가
+- [ ] `MRCPS.PRGBSYC` 폴링이 도는가 (dummy read 는 CPU 를 스톨시킨다)
+
+FSP 의 `r_mram.c` 는 `r_flash_hp` 와 달리 `PLACE_IN_RAM_SECTION` 을 하나도 쓰지 않는다.
+드라이버 자체를 재배치 섹션에 넣어야 할 가능성이 높다.
+
+## 7. 폴더 구조 — peer 분리
 
 부트로더와 펌웨어는 **별도 프로젝트**다. `weact-h750-mini` · `stm32h5-w6300` · `convex` · `nuvoton-m483` 에서 계속 쓰는 패턴이다.
 
@@ -143,7 +213,7 @@ firmware/
 - [ ] 두 프로젝트의 `hw_def.h` 에서 해당 `_USE_HW_*` 스위치와 채널 수가 일관된가
 - [ ] 부트로더에 RTOS 가 없다는 전제를 깨지 않았나 (`osDelay`, 뮤텍스, 스레드 의존)
 
-## 7. 지금 하지 않는 것
+## 8. 지금 하지 않는 것
 
 현재(20번 단계) 펌웨어는 `0x0200_0000` 부터 MRAM 전체를 쓴다. 부트로더 도입 시점에 `memory_regions.ld` 의 `FLASH_START` / `FLASH_LENGTH` 만 바꾸면 되므로 위험이 낮다.
 

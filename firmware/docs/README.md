@@ -43,7 +43,7 @@ VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
 
 | 과제 | 왜 중요한가 | 언제 |
 |---|---|---|
-| **MRAM RWW 검증** | 같은 뱅크 read/program 이 동시에 안 된다. 부트로더 쓰기 루틴을 ITCM 으로 옮겨야 할 수 있다 | 40번 전 |
+| ITCM 재배치 실측 | MRAM 이 단일 뱅크라 부트로더 본체를 ITCM 에서 돌린다(설계 완료). 링크·복사가 실제로 되는지 확인 필요 | 40번 전 |
 | CM33 파티션 값 확정 | MRAM/SRAM 분할 크기. 지금은 초안 | 23번 |
 | SDRAM DQ0~DQ7 핀 | 회로도 파서가 일부를 놓쳤다 | 27번 |
 | 오디오 DSIN 핀 | 〃. 카메라 VIO_D2 와 충돌한다 | 34번 |
