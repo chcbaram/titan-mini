@@ -94,4 +94,23 @@ if(BUILD_CM33)
 endif()
 
 
+# 두 코어가 같은 FSP 소스를 서로 다른 -mcpu 로 컴파일한다. 통합 compile_commands.json
+# 에는 공유 파일이 항목 두 개로 들어가고 IntelliSense 는 먼저 찾은 것을 쓰므로,
+# 코어별로 갈라 놓아야 워크스페이스가 자기 코어 기준으로 해석한다.
+#
+find_package(Python3 COMPONENTS Interpreter)
+
+if(Python3_FOUND)
+  add_custom_target(compdb ALL
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/tools/split_compdb.py
+            ${CMAKE_BINARY_DIR}
+    COMMENT "코어별 compile_commands.json 생성"
+    VERBATIM
+    )
+else()
+  message(STATUS "Python3 없음 - 코어별 compile_commands.json 을 만들지 않는다")
+endif()
+
+
 include(flash)

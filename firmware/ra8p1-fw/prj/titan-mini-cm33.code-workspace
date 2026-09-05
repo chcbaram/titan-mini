@@ -22,6 +22,9 @@
       "src/cpu/cm85": true,
       "src/lib/ra_sdk/cm85": true
     },
-    "cortex-debug.variableUseNaturalFormat": true
+    "cortex-debug.variableUseNaturalFormat": true,
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/cm33/compile_commands.json",
+    "C_Cpp.default.cStandard": "c11",
+    "C_Cpp.default.intelliSenseMode": "linux-gcc-arm"
   }
 }

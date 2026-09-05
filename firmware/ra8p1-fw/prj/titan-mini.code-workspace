@@ -18,6 +18,9 @@
     "search.exclude": {
       "**/build": true
     },
-    "cortex-debug.variableUseNaturalFormat": true
+    "cortex-debug.variableUseNaturalFormat": true,
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/cm85/compile_commands.json",
+    "C_Cpp.default.cStandard": "c11",
+    "C_Cpp.default.intelliSenseMode": "linux-gcc-arm"
   }
 }

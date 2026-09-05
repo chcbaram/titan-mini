@@ -84,6 +84,7 @@ VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
 | [10-dev-environment.md](10-dev-environment.md) | 툴 경로, pyOCD + HSLink, DFP 팩 함정, 핀 조회 | ✅ |
 | [11-fsp-config.md](11-fsp-config.md) | 생성물 커밋 방식, custom board 전환, 재생성 절차, 모듈 추가 | ✅ |
 | [12-project-skeleton.md](12-project-skeleton.md) | 디렉터리·CMake 구조, 링크 주의점, 크로스 플랫폼 규칙 | ✅ |
+| [13-os-setup.md](13-os-setup.md) | **새 PC 환경 구축** — Windows/Linux/macOS 단계별 절차 | ✅ |
 
 ### 구현 기록
 
@@ -156,6 +157,13 @@ python3 firmware/docs/check_svg.py
 
 ```bash
 python3 firmware/ra8p1-fw/tools/check_layers.py
+```
+
+문서끼리 거는 링크와 `#앵커` 도 검사한다. 파일을 옮기거나 제목을 고치면 조용히 죽는데,
+브라우저로 눌러 보기 전에는 티가 안 난다.
+
+```bash
+python3 firmware/docs/check_links.py
 ```
 
 ## 출처

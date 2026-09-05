@@ -1,5 +1,8 @@
 # 10. 개발 환경
 
+> 이 문서는 **무엇이 왜 필요한지**를 다룬다.
+> 새 PC 에서 순서대로 따라 할 절차는 [13-os-setup.md](13-os-setup.md) 에 있다.
+
 > 툴 경로, 보드 연결, 빌드·적재 확인. 여기서 걸린 함정은 전부 적어 둔다.
 > 관련: [11-fsp-config.md](11-fsp-config.md) · [12-project-skeleton.md](12-project-skeleton.md)
 

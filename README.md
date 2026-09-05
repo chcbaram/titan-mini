@@ -41,6 +41,10 @@ firmware/
 python3 tools/setup_tools.py
 ```
 
+> **처음 잡는 PC 라면 [13-os-setup.md](firmware/docs/13-os-setup.md) 를 따라간다.**
+> 툴체인 설치부터 빌드 · 적재 · VSCode 디버깅까지 **Windows / Linux / macOS 별로**
+> 순서대로 정리해 두었다. 아래는 그중 준비 단계만 요약한 것이다.
+
 하는 일
 
 | 항목 | 내용 |
@@ -109,12 +113,23 @@ VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
 기능 문서에는 "무엇을 왜 그렇게 했는지 + 막혔던 지점 + 검증 방법" 을 남긴다.
 코드만 봐서는 알 수 없는 것(RA8P1 특유의 제약, MRAM 특성, FSP/RASC 함정, 툴 버전 이슈)이 대상이다.
 
+전체 목차와 현재 진행 상태는 [firmware/docs/README.md](firmware/docs/README.md) 에 있다.
+자주 쓰는 것만 추리면 —
+
+| 문서 | 언제 보나 |
+|---|---|
+| [13-os-setup.md](firmware/docs/13-os-setup.md) | **새 PC 에서 환경을 처음 잡을 때** (OS별 단계별 절차) |
+| [10-dev-environment.md](firmware/docs/10-dev-environment.md) | 툴이 무엇이고 왜 필요한지, 알려진 함정 |
+| [11-fsp-config.md](firmware/docs/11-fsp-config.md) | FSP 설정을 바꾸거나 RASC 로 다시 생성할 때 |
+| [12-project-skeleton.md](firmware/docs/12-project-skeleton.md) | 디렉터리·CMake 구조, 계층 규칙 |
+
 ## 검사
 
 ```bash
 python3 tools/setup_tools.py --check               # 툴체인과 자산이 갖춰졌는지
 python3 firmware/ra8p1-fw/tools/check_layers.py    # ap/common 이 벤더 HAL 을 안 쓰는지
 python3 firmware/docs/check_svg.py                 # 문서 그림의 글자 겹침/이탈
+python3 firmware/docs/check_links.py               # 문서 링크와 #앵커가 살아 있는지
 ```
 
 ## 라이선스

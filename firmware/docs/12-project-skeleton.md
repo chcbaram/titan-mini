@@ -94,10 +94,73 @@ FSP 함수를 **직접** 부르는 것이다.
 
 ```
 build/
-├── cm85/   titan-mini-cm85.elf · .bin · .map
-├── cm33/   titan-mini-cm33.elf · .bin · .map
+├── cm85/   titan-mini-cm85.elf · .bin · .map · compile_commands.json
+├── cm33/   titan-mini-cm33.elf · .bin · .map · compile_commands.json
+├── CMakeCache.txt · build.ninja · compile_commands.json   빌드 트리는 한 벌이다
 └──         titan-mini.fw        두 코어를 묶은 통합 펌웨어 이미지 (41번 단계)
 ```
+
+### 빌드 트리는 왜 코어별로 나누지 않는가
+
+CMake 프로젝트가 **하나**라서다. 최상위가 `add_subdirectory(cm85)` 와
+`add_subdirectory(cm33)` 를 하므로 configure 한 번에 빌드 트리도 하나고,
+`CMakeCache.txt` · `build.ninja` · `compile_commands.json` 이 한 벌만 생긴다.
+코어별로 갈라지는 것은 **산출물뿐**이다(`RUNTIME_OUTPUT_DIRECTORY`).
+
+하나로 두는 이유는 두 코어를 함께 다뤄야 하는 일이 있기 때문이다.
+
+- `flash` 타겟이 두 ELF 를 **한 번에** 올린다
+- 41번 단계의 `mkimage.py` 가 두 `.bin` 을 한 이미지로 묶는다
+
+빌드 트리를 둘로 쪼개면 이 둘을 조율할 상위 계층(superbuild)이 따로 필요해진다.
+얻는 것에 비해 비싸다.
+
+### 다만 compile_commands.json 은 갈라 놓는다
+
+빌드 트리를 공유해도 되지만 **IntelliSense 는 안 된다.** 두 코어가 같은 FSP 소스를
+서로 다른 `-mcpu` 로 컴파일하기 때문이다. 통합본에는 공유 파일이 항목 두 개로 들어간다.
+
+```
+$ grep -c bsp_clocks.c build/compile_commands.json
+2
+```
+
+| | 같은 `bsp_clocks.c` 에 대해 |
+|---|---|
+| CM85 항목 | `-D_RA_CORE=CPU0  -mcpu=cortex-m85  -mfpu=fpv5-d16` |
+| CM33 항목 | `-D_RA_CORE=CPU1  -mcpu=cortex-m33  -mfpu=fpv5-sp-d16` |
+
+cpptools 는 **먼저 찾은 항목**을 쓴다. 그대로 두면 CM33 워크스페이스에서 공유 FSP 파일을
+열었을 때 M85 기준으로 해석되어, 코드가 멀쩡한데 빨간 줄이 그이거나 반대로 CPU1 에서
+성립하지 않는 코드가 정상으로 보인다. 조용히 틀리는 쪽이라 더 나쁘다.
+
+빌드 트리는 그대로 두고 `tools/split_compdb.py` 가 통합본을 코어별로 나눈다.
+`output` 필드의 `/src/cpu/<코어>/CMakeFiles/` 로 가른다.
+
+```cmake
+find_package(Python3 COMPONENTS Interpreter)
+
+if(Python3_FOUND)
+  add_custom_target(compdb ALL
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/tools/split_compdb.py
+            ${CMAKE_BINARY_DIR}
+    COMMENT "코어별 compile_commands.json 생성"
+    VERBATIM
+    )
+endif()
+```
+
+내용이 그대로면 파일을 다시 쓰지 않는다 — mtime 이 바뀌면 cpptools 가 매번 전체를
+다시 판다. Python 이 없으면 통합본만 두고 넘어간다(빌드는 막지 않는다).
+
+각 워크스페이스는 자기 코어 것만 본다.
+
+| 워크스페이스 | `C_Cpp.default.compileCommands` |
+|---|---|
+| `titan-mini-cm85.code-workspace` | `build/cm85/compile_commands.json` |
+| `titan-mini-cm33.code-workspace` | `build/cm33/compile_commands.json` |
+| `titan-mini.code-workspace` | `build/cm85/…` (전체 보기의 기본은 CPU0) |
 
 `build/` 루트는 **통합 이미지 전용**으로 비워 둔다. `tools/mkimage.py` 가 두 코어의
 `.bin` 을 섹션 컨테이너로 묶어 여기에 쓴다([05-boot-architecture.md](05-boot-architecture.md#2-펌웨어-이미지--섹션-컨테이너)).
@@ -224,7 +287,11 @@ list(REMOVE_ITEM SRC_FILES_RA_GEN ${CORE_SDK}/ra_gen/main.c)
 
 `files.exclude` 와 `search.exclude` 양쪽에 상대 코어의 `src/cpu/<코어>` 와 `src/lib/ra_sdk/<코어>` 를 넣어서, 탐색기에서도 검색에서도 안 걸린다.
 
-`.vscode/` 의 태스크는 `build-configure` / `build-build` / `build-clean` / `flash` 넷이고, 디버그 구성은 `Debug CM85 (pyOCD)` 와 `Attach CM85 (pyOCD)` 다. IntelliSense 는 `build/compile_commands.json` 이 끌고 간다.
+`.vscode/` 의 태스크는 `build-configure` / `build-build` / `build-clean` / `flash` 넷이고, 디버그 구성은 `Debug CM85 (pyOCD)` 와 `Attach CM85 (pyOCD)` 다. IntelliSense 는 **코어별** `build/<코어>/compile_commands.json` 이 끌고 간다(위 2장).
+
+설정을 `c_cpp_properties.json` 이 아니라 **워크스페이스 파일에** 둔 이유가 있다. `c_cpp_properties.json` 은 흔히 전역 `.gitignore` 로 걸러져(이 저장소도 그렇다) 다른 PC 에 따라가지 않는다. `.code-workspace` 는 추적되므로 클론만 하면 코어별 설정이 그대로 붙는다. 어느 쪽이든 **호스트 절대경로는 두지 않는다** — 컴파일러 경로와 플래그는 `compile_commands.json` 에서 오므로 박아 넣으면 다른 OS 에서 깨진다.
+
+로컬에 `c_cpp_properties.json` 이 있으면 거기서 고른 구성이 우선한다. 코어별로 `CM85` / `CM33` 구성을 두고 워크스페이스마다 한 번 골라 주면 VSCode 가 기억한다.
 
 ## 8. 현재 빌드 결과
 
