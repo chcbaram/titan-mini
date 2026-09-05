@@ -144,6 +144,21 @@ uint32_t ipcGetTick(void)
   return shared.peer_tick;
 }
 
+const char *ipcGetName(void)
+{
+  return ipcIsBooted() ? (const char *)shared.peer_name : "-";
+}
+
+const char *ipcGetVersion(void)
+{
+  return ipcIsBooted() ? (const char *)shared.peer_fw_ver : "-";
+}
+
+uint32_t ipcGetClock(void)
+{
+  return ipcIsBooted() ? shared.peer_clock : 0;
+}
+
 
 #if CLI_USE(HW_IPC)
 void cliIpc(cli_args_t *args)
@@ -162,6 +177,9 @@ void cliIpc(cli_args_t *args)
       uint32_t a0 = shared.peer_alive;
       uint32_t t0 = shared.peer_tick;
 
+      cliPrintf("name       : %s\n", (const char *)shared.peer_name);
+      cliPrintf("fw ver     : %s\n", (const char *)shared.peer_fw_ver);
+      cliPrintf("clock      : %d MHz\n", (int)(shared.peer_clock / 1000000));
       cliPrintf("boot time  : %d ms\n", (int)boot_time_ms);
       cliPrintf("magic      : 0x%08X\n", (unsigned)shared.magic);
       cliPrintf("version    : %d (기대 %d)\n",

@@ -33,7 +33,10 @@ extern "C" {
  * 상대 코어가 자기 버전을 쓰고 주 코어가 확인한다.
  */
 #define SHARED_MAGIC      0x544D5348UL      /* "TMSH" */
-#define SHARED_VERSION    1
+#define SHARED_VERSION    2
+
+#define SHARED_NAME_MAX   32
+#define SHARED_VER_MAX    16
 
 
 typedef struct
@@ -44,6 +47,17 @@ typedef struct
   //-- 상대 코어가 살아 있음을 알린다. 주 코어가 증가를 확인한다.
   volatile uint32_t peer_alive;
   volatile uint32_t peer_tick;
+
+  /*
+   * 상대 코어가 자기를 소개한다. magic 이 서기 전에 채워지고 그 뒤로 바뀌지 않으므로
+   * volatile 을 붙이지 않는다 - 매번 다시 읽을 이유가 없다.
+   *
+   * clock 은 상대 코어의 SystemCoreClock 이다. 두 코어의 클럭이 다르므로
+   * (CPU0 은 CPUCK0, CPU1 은 SCKDIVCR2.CPUCK1 분주) 주 코어가 대신 계산할 수 없다.
+   */
+  volatile uint32_t peer_clock;              // Hz
+  char              peer_name[SHARED_NAME_MAX];
+  char              peer_fw_ver[SHARED_VER_MAX];
 
 } shared_t;
 

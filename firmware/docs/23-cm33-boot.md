@@ -146,6 +146,7 @@ CPU1 이 살아 있는지 CPU0 이 확인할 수단이 필요하다. SRAM 공유
 ```c
 /* src/cpu/shared/shared.h */
 #define SHARED_MAGIC   0x544D5348UL   /* "TMSH" */
+#define SHARED_VERSION 2
 
 typedef struct
 {
@@ -153,8 +154,19 @@ typedef struct
   volatile uint32_t version;
   volatile uint32_t peer_alive;
   volatile uint32_t peer_tick;
+
+  /* 상대 코어가 자기를 소개한다. magic 이 서기 전에 채워지고 그 뒤로 바뀌지 않는다 */
+  volatile uint32_t peer_clock;              // Hz
+  char              peer_name[32];
+  char              peer_fw_ver[16];
 } shared_t;
 ```
+
+`peer_clock` 은 주 코어가 대신 계산할 수 없다. **두 코어의 클럭이 다르다** — CPU0 은
+`SCKDIVCR2.CPUCK0`, CPU1 은 `CPUCK1` 로 따로 분주된다. CPU1 은 `BSP_CFG_SKIP_INIT` 로
+클럭 초기화를 건너뛰지만 `SystemCoreClockUpdate()` 는 무조건 불리고, 그 안에
+`BSP_CFG_CPU_CORE == 1` 이면 `CPUCK1` 을 읽는 분기가 있어서 값이 유효하다.
+실측 **CPU0 1000 MHz / CPU1 250 MHz**.
 
 링커 스크립트가 두 코어 모두 같은 주소에 놓는다.
 
@@ -262,13 +274,30 @@ cli# ipc info
 peer       : CPU1 (Cortex-M33)
 image      : 있음
 state      : RUNNING
+name       : TITAN-MINI-CM33
+fw ver     : V260905R1
+clock      : 250 MHz
 boot time  : 1 ms
 magic      : 0x544D5348
-version    : 1 (기대 1)
-alive      : 69  (+4 / 500ms)
-tick       : 8571 ms  (+504)
+version    : 2 (기대 2)
+alive      : 44  (+4 / 500ms)
+tick       : 5420 ms  (+504)
 running    : 예
 ```
+
+부팅 로그에도 남는다.
+
+```
+Booting..Clock 		: 1000 MHz
+Booting..CPU1  		: RUNNING (1 ms)
+Booting..CPU1 Name	: TITAN-MINI-CM33
+Booting..CPU1 Ver	: V260905R1
+Booting..CPU1 Clock	: 250 MHz
+```
+
+> **한 줄은 `logPrintf()` 한 번으로 찍는다.** 로그는 줄바꿈이 아니라 **호출 하나를
+> 항목 하나로** 세고 `%04X` 로 번호를 붙인다. 한 줄을 나눠 찍으면 `log boot` 덤프에서
+> `RUNNING0005 (1 ms)0006` 처럼 번호가 문장 중간에 끼어 보인다.
 
 ## 6. CMake — FSP 모듈 목록은 코어별이다
 

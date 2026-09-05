@@ -28,10 +28,22 @@ bool hwInit(void)
   //   (예전에는 hal_entry() 에서 부팅 아주 초기에 했다)
   //
   ipcInit();
-  logPrintf("Booting..CPU1  \t\t: %s", ipcGetStateStr());
+
+  //-- 로그는 logPrintf() 호출 하나를 항목 하나로 센다(줄바꿈 기준이 아니다).
+  //   한 줄을 나눠 찍으면 log 덤프에서 줄 번호가 중간에 끼어 보인다.
+  //
   if (ipcIsBooted())
-    logPrintf(" (%d ms)", (int)ipcGetBootTime());
-  logPrintf("\r\n");
+  {
+    logPrintf("Booting..CPU1  \t\t: %s (%d ms)\r\n",
+              ipcGetStateStr(), (int)ipcGetBootTime());
+    logPrintf("Booting..CPU1 Name\t: %s\r\n", ipcGetName());
+    logPrintf("Booting..CPU1 Ver\t: %s\r\n", ipcGetVersion());
+    logPrintf("Booting..CPU1 Clock\t: %d MHz\r\n", (int)(ipcGetClock() / 1000000));
+  }
+  else
+  {
+    logPrintf("Booting..CPU1  \t\t: %s\r\n", ipcGetStateStr());
+  }
 
   logPrintf("\r\n");
 

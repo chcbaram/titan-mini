@@ -56,6 +56,11 @@ uint32_t     ipcGetBootTime(void);
 uint32_t     ipcGetAliveCnt(void);
 uint32_t     ipcGetTick(void);
 
+//-- 상대 코어가 부팅하며 알려준 자기 정보. 부팅에 성공했을 때만 유효하다.
+const char  *ipcGetName(void);
+const char  *ipcGetVersion(void);
+uint32_t     ipcGetClock(void);            // Hz
+
 //-- 상대 코어가 자기 생존을 알린다. 상대 코어 쪽에서만 구현한다.
 void         ipcUpdate(void);
 

@@ -2,6 +2,7 @@
 
 #ifdef _USE_HW_IPC
 #include "shared.h"
+#include <string.h>
 
 
 /*
@@ -29,6 +30,14 @@ bool ipcInit(void)
   shared.peer_alive = 0;
   shared.peer_tick  = 0;
   shared.version    = SHARED_VERSION;
+
+  //-- 자기 소개. CPU0 은 이 값을 부팅 로그에 찍는다.
+  //   클럭은 CPU0 이 대신 계산할 수 없다 - CPU1 은 SCKDIVCR2.CPUCK1 로 따로 분주된다.
+  shared.peer_clock = SystemCoreClock;
+  strncpy((char *)shared.peer_name,   _DEF_BOARD_NAME,          SHARED_NAME_MAX - 1);
+  strncpy((char *)shared.peer_fw_ver, _DEF_FIRMWATRE_VERSION,   SHARED_VER_MAX  - 1);
+  shared.peer_name[SHARED_NAME_MAX - 1]  = 0;
+  shared.peer_fw_ver[SHARED_VER_MAX - 1] = 0;
 
   __DMB();
   shared.magic = SHARED_MAGIC;
