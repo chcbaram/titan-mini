@@ -9,23 +9,6 @@
 #define _DEF_BOARD_NAME           "TITAN-MINI-CM85"
 
 
-//-- 하드웨어 핀맵 (Titan Mini HW:V1.0, 회로도 기준. docs/03-board-mapping.md)
-//
-//   LED      : P109(R) P108(G) P110(B)  RGB LED3 XL-1615RGBC-RF
-//              공통 애노드가 +3V3 이라 전부 active low
-//              RA 기본 디버그 핀 자리지만 이 보드는 디버그를 P208~P211 로 뺐다
-//   디버그   : P211(SWCLK) P210(SWDIO) P209(SWO) P208(TDI)  J6 FTSH-105
-//   UART     : P801(TXD2) / P802(RXD2)  SCI2, H1 커넥터
-//              HSLink 디버거의 가상 시리얼이 여기 붙어 있어 케이블 하나로
-//              적재와 콘솔이 동시에 된다. 회로도에는 H1 이 DNP 로 표기돼 있다
-//   부트모드 : P201(MD) <- SW2 USER/BOOT 버튼
-//   I2C1     : P512(SCL) / P511(SDA)   IMU LSM6DS3TR-C @0x6A + 터치
-//   OSPI0    : SCLK=P808 CS1=P104 SIO0~3=P100/P803/P103/P101  (W25Q64 8MB, 쿼드)
-//   SDHI     : CLK=PD05 CMD=PD04 DAT0~2=PD03/PD02/PD01 CD=PD07
-//   CAN      : CTX0=P312 / CRX0=P311
-//
-
-
 #define _USE_HW_RTOS
 
 #define _USE_HW_LED
@@ -33,7 +16,7 @@
 
 #define _USE_HW_UART
 #define      HW_UART_MAX_CH         1
-#define      HW_UART_CH_CLI         _DEF_UART1    // SCI2  P801/P802
+#define      HW_UART_CH_CLI         _DEF_UART1
 #define      HW_UART_CH_LOG         _DEF_UART1
 
 #define _USE_HW_CLI

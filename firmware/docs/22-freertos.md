@@ -174,13 +174,30 @@ static bool cliModuleInit(void)
 }
 ```
 
-`moduleInit()` 이 링커가 만든 `_smodule ~ _emodule` 범위를 훑어 **우선순위 순으로** `init()` 을 부른다.
+모듈 디스크립터는 네 가지를 선언할 수 있다.
+
+| 필드 | 언제 불리나 |
+|---|---|
+| `init` | `moduleInit()` 이 **우선순위 순으로** 한 번 |
+| `update` | `moduleUpdate()` 가 등록 순으로 주기적으로. 스레드를 만들 만큼 무겁지 않은 일 |
+| `arg` | `update` 에 그대로 넘긴다 |
+| `event_cb` | 이벤트 구독자. **`init()` 이 성공하면 자동으로 등록된다** |
+
+`event_cb` 를 디스크립터에 두면 모듈이 `eventSub()` 를 직접 부르지 않아도 된다.
+초기화에 실패한 모듈은 구독자로 올리지 않는다 — 준비 안 된 상태를 이벤트가 건드리면 안 된다.
 
 ```
 [  ] moduleInit()
-       count : 1
+       count : 2
+       display          OK
        cli              OK
 [  ] Thread Started : cli
+
+cli# module info
+count : 2
+idx  name             pri  update event
+0    cli              6    -      -
+1    display          1    -      yes
 ```
 
 ### 링커 스크립트를 우리가 소유한다
@@ -258,7 +275,16 @@ eventPub(EVENT_ETH_LINK, is_up);
 ```
 
 ```c
-// display 모듈이 구독해서 표시를 정한다.
+// display 모듈이 구독해서 표시를 정한다. 디스크립터에 event_cb 만 적으면
+// moduleInit() 이 자동으로 등록한다.
+MODULE_DEF(display)
+{
+  .name     = "display",
+  .priority = MODULE_PRI_HIGH,
+  .init     = displayInit,
+  .event_cb = displayEvent,
+};
+
 static bool displayEvent(event_t *p_evt)
 {
   switch (p_evt->code)
@@ -287,7 +313,22 @@ static bool displayEvent(event_t *p_evt)
 | `common/hw/include/event.h` | API |
 | `cpu/cm85/hw/driver/event.c` | qbuffer 기반 큐 + 구독자 목록 |
 
-발행은 큐에 넣기만 하고, 뿌리는 것은 `eventUpdate()` 가 스레드 문맥에서 한다. `apMain()` 의 루프에서 10 ms 마다 부른다. **ISR 에서 발행해도 되지만 뿌리는 것은 항상 스레드 문맥이라**, 구독자가 로그를 찍거나 블로킹해도 안전하다.
+발행은 큐에 넣기만 하고, 뿌리는 것은 `eventUpdate()` 가 스레드 문맥에서 한다. **ISR 에서 발행해도 되지만 뿌리는 것은 항상 스레드 문맥이라**, 구독자가 로그를 찍거나 블로킹해도 안전하다.
+
+> **전용 이벤트 스레드는 두지 않는다.** `stm32h5-bd`(2025-07)에는 있었지만, 그보다 최신인
+> `weact-h750-mini`(2026-08-30)와 `stm32h5-w6300` 은 `eventUpdate()` 를 기존 루프에서 부른다.
+> 이벤트 처리는 대부분 짧고, 스레드를 늘리면 스택과 컨텍스트 스위치만 늘어난다.
+
+여기서는 `main` 스레드의 루프에서 10 ms 마다 부른다.
+
+```c
+while (1)
+{
+  eventUpdate();     // 큐에 쌓인 이벤트를 구독자에게 뿌린다
+  moduleUpdate();    // update() 를 등록한 모듈들
+  delay(10);
+}
+```
 
 `eventPub` / `eventSub` 는 매크로다. 코드 이름과 함수 이름을 문자열로 같이 넘겨서 로그와 CLI 에 숫자 대신 이름이 보인다.
 

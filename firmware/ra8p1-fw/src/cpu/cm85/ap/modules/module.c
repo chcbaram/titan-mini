@@ -68,12 +68,36 @@ bool moduleBegin(void)
         bool mod_ret = p_mod->init();
 
         ret &= mod_ret;
+
+#ifdef _USE_HW_EVENT
+        //-- init() 이 성공한 모듈만 구독자로 올린다. 초기화에 실패한 모듈이
+        //   이벤트를 받으면 준비 안 된 상태를 건드린다.
+        //
+        if (mod_ret == true && p_mod->event_cb != NULL)
+        {
+          eventSubFunc(p_mod->name, p_mod->event_cb);
+        }
+#endif
         logPrintf("       %-16s %s\r\n", p_mod->name, mod_ret ? "OK" : "Fail");
       }
     }
   }
 
   return ret;
+}
+
+
+bool moduleUpdate(void)
+{
+  for (int i = 0; i < info.count; i++)
+  {
+    if (info.p_module[i].update != NULL)
+    {
+      info.p_module[i].update(info.p_module[i].arg);
+    }
+  }
+
+  return true;
 }
 
 
@@ -85,11 +109,16 @@ void cliModule(cli_args_t *args)
   if (args->argc == 1 && args->isStr(0, "info"))
   {
     cliPrintf("count : %d\n", (int)info.count);
-    cliPrintf("%-4s %-16s %s\n", "idx", "name", "pri");
+    cliPrintf("%-4s %-16s %-4s %-6s %s\n", "idx", "name", "pri", "update", "event");
 
     for (int i = 0; i < info.count; i++)
     {
-      cliPrintf("%-4d %-16s %d\n", i, info.p_module[i].name, (int)info.p_module[i].priority);
+      cliPrintf("%-4d %-16s %-4d %-6s %s\n",
+                i,
+                info.p_module[i].name,
+                (int)info.p_module[i].priority,
+                info.p_module[i].update != NULL ? "yes" : "-",
+                info.p_module[i].event_cb != NULL ? "yes" : "-");
     }
     ret = true;
   }

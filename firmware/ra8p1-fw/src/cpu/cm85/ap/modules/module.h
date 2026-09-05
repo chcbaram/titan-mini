@@ -25,7 +25,21 @@ typedef struct
 {
   const char       name[32];
   ModulePriority_t priority;
+
+  //-- 한 번만 부른다. moduleInit() 이 우선순위 순으로.
   bool           (*init)(void);
+
+  //-- 주기적으로 부른다. moduleUpdate() 가 등록 순으로.
+  //   스레드를 따로 만들 만큼 무겁지 않은 일을 여기 둔다.
+  void           (*update)(void const *arg);
+  void            *arg;
+
+#ifdef _USE_HW_EVENT
+  //-- 이벤트 구독자. init() 이 성공하면 moduleInit() 이 자동으로 등록한다.
+  //   모듈이 직접 eventSub() 를 부를 필요가 없다.
+  event_func_t     event_cb;
+#endif
+
 } module_t;
 
 
@@ -45,6 +59,7 @@ typedef struct
 
 
 bool moduleInit(void);
+bool moduleUpdate(void);
 
 
 #ifdef __cplusplus

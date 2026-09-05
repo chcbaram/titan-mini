@@ -3,6 +3,19 @@
 
 #ifdef _USE_HW_LED
 
+/*
+ * RGB LED3 (XL-1615RGBC-RF) — 회로도 13페이지
+ *
+ *   RED   P109  R80 2KΩ
+ *   GREEN P108  R81 12KΩ
+ *   BLUE  P110  R82 10KΩ
+ *
+ * 공통 애노드가 +3V3 이라 전부 active low 다. 그래서 on_state 가 LOW 다.
+ *
+ * 주의: RA 계열 기본 디버그 핀이 P108/P109/P110/P300 인데, 이 보드는 디버그를
+ *       P208~P211 대체 핀으로 빼고 그 자리를 LED 에 내줬다. pin_data.c 를
+ *       그렇게 잡아야 한다. (docs/03-board-mapping.md)
+ */
 
 typedef struct
 {

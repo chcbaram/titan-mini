@@ -25,7 +25,8 @@ void apMain(void)
   //
   while (1)
   {
-    eventUpdate();
+    eventUpdate();     // 큐에 쌓인 이벤트를 구독자에게 뿌린다
+    moduleUpdate();    // update() 를 등록한 모듈들
     delay(10);
   }
 }

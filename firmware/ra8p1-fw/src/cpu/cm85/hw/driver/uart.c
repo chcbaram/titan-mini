@@ -4,6 +4,18 @@
 
 #ifdef _USE_HW_UART
 
+/*
+ * SCI2 — 회로도 13페이지의 H1 커넥터
+ *
+ *   TXD2  P801
+ *   RXD2  P802
+ *
+ * HSLink 디버거의 가상 시리얼이 여기 붙어 있어 케이블 하나로 적재와 콘솔이
+ * 동시에 된다. 회로도에는 H1 이 DNP 로 표기돼 있지만 실물에는 배선돼 있다.
+ *
+ * 40핀 헤더의 SCI1(P707 TXD1 / P706 RXD1)도 UART 로 쓸 수 있다. 옮기려면
+ * configuration.xml 의 채널과 핀을 바꾸고 재생성한다. (docs/21-uart-cli.md)
+ */
 
 #define UART_RX_BUF_LENGTH        1024
 

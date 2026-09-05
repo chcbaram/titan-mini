@@ -42,6 +42,14 @@ firmware/
 
 `src/common/core/`(qbuffer, util_core)와 겹치지 않도록 코어 디렉터리는 `core` 가 아니라 **`cpu`** 다. FSP 도 `_RA_CORE=CPU0` 처럼 CPU 로 부른다.
 
+### 핀 번호는 드라이버 `.c` 에 적는다
+
+`hw_def.h` 에는 **기능 스위치와 개수만** 둔다. 어느 핀을 쓰는지는 그 핀을 쓰는 드라이버가
+안다. `led.c` 상단에 RGB LED 결선을, `uart.c` 상단에 SCI2 핀을 적는 식이다.
+
+전체 핀 맵은 [03-board-mapping.md](03-board-mapping.md) 하나에만 둔다. 같은 정보를
+`hw_def.h` 에도 복사해 두면 회로도가 바뀔 때 한쪽만 고치게 된다.
+
 레이어 규약은 NUCLEO-N657X0 과 같다: `main → bsp → hw → ap`, `_USE_HW_*` 스위치, `common/hw/include` 의 공용 API 헤더와 `hw/driver` 의 칩별 구현 분리.
 
 ## 2. 빌드 타겟

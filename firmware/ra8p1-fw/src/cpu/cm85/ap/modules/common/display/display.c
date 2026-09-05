@@ -21,7 +21,8 @@ MODULE_DEF(display)
 {
   .name     = "display",
   .priority = MODULE_PRI_HIGH,     // 다른 모듈이 상태를 바꾸기 전에 떠 있어야 한다
-  .init     = displayInit
+  .init     = displayInit,
+  .event_cb = displayEvent,        // moduleInit() 이 자동으로 구독시킨다
 };
 
 
@@ -43,10 +44,6 @@ bool displayInit(void)
   ledOff(DISPLAY_LED_ACT);
 
   display_state = DISPLAY_STATE_RUN;
-
-  //-- 이벤트를 구독한다. 발행하는 쪽은 LED 가 있는지도 모른다.
-  //
-  eventSub(displayEvent);
 
 #if CLI_USE(HW_DISPLAY)
   cliAdd("display", cliDisplay);
