@@ -4,18 +4,11 @@
 
 void hal_entry(void)
 {
-#if (1 == BSP_MULTICORE_PROJECT) && !BSP_SECONDARY_CORE_BUILD
   /*
-   * CPU1 (Cortex-M33) 을 깨운다.
+   * CPU1 기동은 여기서 하지 않는다.
    *
-   * 레지스터 세 개를 쓴다.
-   *   CPU1INITVTOR  벡터 테이블 주소. 하위 7비트가 버려지므로 128 바이트 정렬 필수
-   *   CPU1WAITCR    디버거가 CPU1 을 미리 붙잡아 둔 경우를 풀어준다
-   *   CPU1ACTCSR    키코드 0xA5 와 함께 기동 요청
-   *
-   * 주소는 BSP_PARTITION_FLASH_CPU1_S_START 에서 온다.
-   * (src/lib/ra_sdk/partition.h, docs/23-cm33-boot.md)
+   * 이 함수는 부팅 아주 초기(bspInit)에 불리므로 UART 도 로그도 아직 없다.
+   * 기동을 시도했는지, 성공했는지를 남길 방법이 없어서
+   * hw/driver/ipc.c 의 ipcInit() 으로 옮겼다. hwInit() 이 로그를 연 뒤에 부른다.
    */
-  R_BSP_SecondaryCoreStart();
-#endif
 }

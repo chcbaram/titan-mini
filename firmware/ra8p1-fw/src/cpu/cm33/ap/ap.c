@@ -3,19 +3,8 @@
 
 void apInit(void)
 {
-  /*
-   * 공유 블록은 NOLOAD 라 부팅 시 0 으로 밀리지 않는다. 그래야 나중에 부팅한
-   * 코어가 상대가 써 둔 값을 지우지 않는다. 대신 자기 필드는 자기가 초기화한다.
-   *
-   * magic 을 마지막에 쓰는 것이 중요하다. CPU0 이 magic 만 보고 유효하다고
-   * 판단하므로, 카운터가 쓰레기인 상태에서 magic 이 먼저 서면 CPU0 이 그걸 읽는다.
-   */
-  g_shared.cpu1_alive = 0;
-  g_shared.cpu1_tick  = 0;
-  g_shared.version    = SHARED_VERSION;
-
-  __DMB();
-  g_shared.magic = SHARED_MAGIC;
+  //-- 공유 블록 초기화는 hwInit() 의 ipcInit() 이 이미 했다.
+  //   CPU0 은 그 시점부터 CPU1 을 살아 있는 것으로 본다.
 }
 
 void apMain(void)
@@ -25,8 +14,7 @@ void apMain(void)
   //
   while (1)
   {
-    g_shared.cpu1_alive++;
-    g_shared.cpu1_tick = millis();
+    ipcUpdate();
 
     delay(100);
   }

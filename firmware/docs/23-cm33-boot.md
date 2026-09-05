@@ -89,18 +89,7 @@ RASC 는 두 코어 모두에게 **MRAM/SRAM 전체**를 준다. 그대로 두�
 
 ## 4. 기동
 
-`hal_entry()` 에서 부른다. CPU0 만 해당한다.
-
-```c
-void hal_entry(void)
-{
-#if (1 == BSP_MULTICORE_PROJECT) && !BSP_SECONDARY_CORE_BUILD
-    R_BSP_SecondaryCoreStart();
-#endif
-}
-```
-
-FSP 의 인라인 함수가 레지스터 세 개를 쓴다.
+FSP 의 인라인 함수 `R_BSP_SecondaryCoreStart()` 가 레지스터 세 개를 쓴다.
 
 | 레지스터 | 값 | 의미 |
 |---|---|---|
@@ -108,20 +97,62 @@ FSP 의 인라인 함수가 레지스터 세 개를 쓴다.
 | `CPU1WAITCR` | `0` | 디버거가 CPU1 을 붙잡아 둔 경우를 푼다 |
 | `CPU1ACTCSR` | `(0xA5 << KEY) \| ACTREQ` | 기동 요청 |
 
-## 5. 공유 블록
+**FSP 가 주는 멀티코어 API 는 이것 하나뿐이다.** 반환값이 없고, 기동에 성공했는지
+지금 살아 있는지를 묻는 API 는 FSP 전체에 없다. IPC 쪽에 `R_BSP_IpcSemaphoreTake/Give`
+와 `R_BSP_IpcNmiRequestSet/Enable` 이 있지만(`bsp_ipc.c`, 이미 빌드에 들어간다) 그것도
+상호배제와 알림이지 상태 조회가 아니다. 그래서 기동 결과는 공유 블록 핸드셰이크로
+직접 확인한다(5장).
+
+### 어디서 부르나
+
+예전에는 `hal_entry()` 에서 불렀다. 지금은 `hw/driver/ipc.c` 의 `ipcInit()` 이 부르고,
+`hwInit()` 이 로그를 연 뒤에 호출한다. `hal_entry()` 는 `bspInit()` 안에서 아주 일찍
+불리므로 UART 도 로그도 없어서 **시도했는지 성공했는지를 남길 방법이 없었다.**
+
+```
+Booting..Clock 		: 1000 MHz
+Booting..CPU1  		: RUNNING (1 ms)
+```
+
+### 이미지가 없으면 깨우지 않는다
+
+`R_BSP_SecondaryCoreStart()` 를 감싸는 FSP 의 조건은
+`BSP_MULTICORE_PROJECT && !BSP_SECONDARY_CORE_BUILD` 인데, `BSP_MULTICORE_PROJECT` 는
+`BSP_PARTITION_FLASH_CPU1_S_START` 가 정의돼 있는지만 본다(2장). `partition.h` 는 항상
+포함되므로 **이 조건은 언제나 참이다.**
+
+그래서 `BUILD_CM33=OFF` 로 빌드해도 CPU0 이 CPU1 을 `0x020C0000` 으로 출발시켰다.
+그 자리에는 아무것도 없으니 CPU1 은 빈 MRAM 을 벡터로 읽고 폴트에 빠진다. CPU0 은
+결과를 기다리지 않으므로 정상 동작하지만, 8장의 pyOCD AP#2 오류가 CM33 을 올리지
+않았을 때도 뜨는 이유가 이것이었다.
+
+빌드 구성과 실제 동작을 묶었다. CMake 가 `BUILD_CM33` 을 매크로로 넘긴다.
+
+```cmake
+-D_HW_DEF_CPU1_IMAGE=$<BOOL:${BUILD_CM33}>
+```
+
+`hw_def.h` 는 정의가 없으면 `0` 으로 둔다 — **안 깨우는 쪽이 안전한 기본값이다.**
+
+런타임에 벡터를 보고 판단하는 방법도 있지만 지금은 택하지 않았다. CPU1 슬롯에 쓰는
+경로가 우리 `flash` 명령 하나뿐이라 검증할 근거가 없고, 무엇보다 **직전에 올린 낡은
+이미지를 걸러내지 못한다.** 40번에서 CRC 와 헤더를 갖춘 이미지 검증이 생기면 그때
+런타임 검사로 옮긴다.
+
+## 5. 공유 블록과 생존 확인
 
 CPU1 이 살아 있는지 CPU0 이 확인할 수단이 필요하다. SRAM 공유 구간에 구조체 하나를 둔다.
 
 ```c
-/* src/common/hw/include/shared.h */
+/* src/common/shared.h */
 #define SHARED_MAGIC   0x544D5348UL   /* "TMSH" */
 
 typedef struct
 {
   volatile uint32_t magic;
   volatile uint32_t version;
-  volatile uint32_t cpu1_alive;
-  volatile uint32_t cpu1_tick;
+  volatile uint32_t peer_alive;
+  volatile uint32_t peer_tick;
 } shared_t;
 ```
 
@@ -138,24 +169,97 @@ typedef struct
 > ### NOLOAD 여야 한다
 >
 > 이미지에 담지도, 부팅 시 0 으로 밀지도 않는다. 초기화하면 **나중에 부팅한 코어가 상대가
-> 써 둔 값을 지운다.** CPU0 이 먼저 뜨고 CPU1 이 나중에 뜨는데, CPU1 의 스타트업이 이 영역을
-> 밀어 버리면 순서에 따라 값이 사라진다.
->
-> 대신 **자기 필드는 자기가 초기화한다.** 그리고 `magic` 을 **마지막에** 쓴다.
+> 써 둔 값을 지운다.** 대신 **자기 필드는 자기가 초기화하고**, `magic` 을 **마지막에** 쓴다.
 >
 > ```c
-> g_shared.cpu1_alive = 0;
-> g_shared.cpu1_tick  = 0;
-> g_shared.version    = SHARED_VERSION;
+> shared.peer_alive = 0;
+> shared.peer_tick  = 0;
+> shared.version    = SHARED_VERSION;
 >
 > __DMB();
-> g_shared.magic = SHARED_MAGIC;
+> shared.magic = SHARED_MAGIC;
 > ```
 >
-> CPU0 은 `magic` 만 보고 유효하다고 판단한다. 카운터가 쓰레기인 상태에서 `magic` 이 먼저
-> 서면 CPU0 이 그걸 읽는다. 실제로 이 순서를 안 지켰을 때 `alive` 가 13억부터 시작했다.
+> 카운터가 쓰레기인 상태에서 `magic` 이 먼저 서면 CPU0 이 그걸 읽는다. 실제로 이 순서를
+> 안 지켰을 때 `alive` 가 13억부터 시작했다.
 
-`shared_t` 의 실체는 **CPU1 이 정의**하고 CPU0 은 같은 주소에 심볼만 얹는다.
+### 함정 — magic 만으로는 생존을 알 수 없다
+
+`NOLOAD` 라 아무도 지우지 않고, **SRAM 은 CPU0 리셋만으로는 내용이 남는다.** 그래서
+CPU1 을 지워 버려도 이전 세션이 써 둔 `magic` 이 그대로 유효해 보인다. 실측한 것이다 —
+CPU1 파티션을 `0xFFFFFFFF` 로 소거한 뒤에도 이렇게 나왔다.
+
+```
+magic   : 0x544D5348      ← 유효해 보인다
+alive   : 65303  (+0 / 500ms)
+tick    : 8231700 ms  (+0)
+```
+
+진실을 말해 주는 것은 `+0` 증분뿐이었다. **CPU0 이 기동 직전에 `magic` 을 0 으로 지운다.**
+그래야 `magic` 이 비로소 진짜 생존 표시가 된다.
+
+```
+CPU0   magic 을 0 으로 지운다 → 기동 요청 → magic 이 설 때까지 기다린다 (100 ms)
+CPU1   자기 필드 초기화 → __DMB() → magic 을 마지막에 쓴다
+```
+
+실측 핸드셰이크 시간은 **1 ms** 다.
+
+### 공개 인터페이스는 함수뿐이다
+
+`shared_t` 와 그 변수는 각 코어의 `hw/driver/ipc.c` 안에 `static` 으로 숨어 있다.
+바깥은 `common/hw/include/ipc.h` 의 함수로만 접근한다.
+
+```c
+bool         ipcInit(void);
+IpcState_t   ipcGetState(void);
+const char  *ipcGetStateStr(void);
+bool         ipcIsBooted(void);    // 부팅 핸드셰이크 성공 (래치)
+bool         ipcIsRunning(void);   // 지금 살아 있는지 (비블로킹)
+uint32_t     ipcGetBootTime(void);
+uint32_t     ipcGetAliveCnt(void);
+uint32_t     ipcGetTick(void);
+void         ipcUpdate(void);      // 상대 코어가 자기 생존을 알린다
+```
+
+| 상태 | 뜻 |
+|---|---|
+| `IPC_STATE_DISABLED` | 상대 코어 이미지를 함께 빌드하지 않았다. 기동하지 않는다 |
+| `IPC_STATE_TIMEOUT` | 기동을 요청했으나 핸드셰이크가 오지 않았다 |
+| `IPC_STATE_BAD_VERSION` | 응답했지만 공유 블록 버전이 다르다. 한쪽만 다시 빌드한 경우 |
+| `IPC_STATE_RUNNING` | 정상 |
+
+`ipcIsBooted()` 는 기동 시점에 확정되는 래치고, `ipcIsRunning()` 은 `peer_alive` 가
+최근에 움직였는지로 지금을 본다. 블로킹하지 않으므로 주기적으로 불러도 된다 —
+이것으로 런타임에 CPU1 유무에 따라 동작을 가를 수 있다.
+
+> ### 이름 규칙
+>
+> 헤더가 `common/hw/include/` 에 있으므로 **MCU 에 중립이어야 한다.** `cpu1` 이 아니라
+> `ipc`, 필드도 `cpu1_alive` 가 아니라 `peer_alive` 다. STM32H7 이면 CM4/CM7,
+> RP2040 이면 core1 이라 벤더 용어를 API 에 박으면 포팅할 때 걸린다.
+> 기존 `NU87-TinyDK` 도 같은 자리에 `ipc.h` 를 쓴다.
+>
+> 반면 `shared.h` 는 API 가 아니라 **이 프로젝트 두 코어 사이의 데이터 규약**이라
+> `common/hw/include/` 가 아니라 `common/` 바로 아래 둔다. `def.h` · `evt_code.h` 와
+> 같은 성격이다.
+>
+> 공개 헤더에 `extern` 을 두지 않는다. 전역 변수를 노출하는 대신 함수로만 연다.
+
+### CLI
+
+```
+cli# ipc info
+peer       : CPU1 (Cortex-M33)
+image      : 있음
+state      : RUNNING
+boot time  : 1 ms
+magic      : 0x544D5348
+version    : 1 (기대 1)
+alive      : 69  (+4 / 500ms)
+tick       : 8571 ms  (+504)
+running    : 예
+```
 
 ## 6. CMake — FSP 모듈 목록은 코어별이다
 
@@ -261,11 +365,11 @@ $ arm-none-eabi-objdump -h build/cm85/titan-mini-cm85.elf
 동작 확인:
 
 ```
-cli# thread cpu1
-magic   : 0x544D5348
-version : 1
-alive   : 28  (+4 / 500ms)
-tick    : 3403 ms  (+504)
+cli# ipc info
+state      : RUNNING
+boot time  : 1 ms
+alive      : 28  (+4 / 500ms)
+tick       : 3403 ms  (+504)
 ```
 
 `alive` 가 0 부터 시작하고 `tick` 이 500 ms 창에서 504 증가한다 — CPU1 의 SysTick 이 1 kHz 로 돈다.
@@ -274,7 +378,10 @@ tick    : 3403 ms  (+504)
 
 CPU1 은 지금 살아 있다는 표시만 남긴다. 앞으로 필요한 것:
 
-- **IPC 세마포어** — FSP 의 `bsp_ipc.c`. 기동 핸드셰이크와 상호배제
+- **IPC 세마포어와 코어간 NMI** — FSP 의 `bsp_ipc.c` (이미 빌드에 들어가 있다).
+  `R_BSP_IpcSemaphoreTake/Give` 로 상호배제, `R_BSP_IpcNmiRequestSet/Enable` 로 알림.
+  RA8P1 은 `IPCSEM` 하드웨어 세마포어를 16 개 갖는다. `ipc.h` 에 `ipcSend`/`ipcRecv` 를
+  더해 감싼다
 - **공유 영역 non-cacheable** — MPU 설정. 지금은 D-cache 를 아직 안 켰기 때문에 문제가
   드러나지 않는다. 캐시를 켜기 전에 반드시 잡아야 한다 ([04장 5절](04-dualcore.md#5-d-cache--이걸-빼먹으면-조용히-깨진다))
 - **CPU1 쪽 FreeRTOS** — 각 코어가 독립된 인스턴스를 갖는다

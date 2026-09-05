@@ -288,14 +288,19 @@ I Loading .../cm33/titan-mini-cm33.elf
 I Erased 32768 bytes (1 sector), programmed 8192 bytes (1 page)
 ```
 
-CM33 이 실제로 도는지는 CLI 로 본다. `alive` 와 `tick` 이 **다시 쳤을 때 올라가 있어야**
-한다. 값이 멈춰 있으면 CPU1 이 죽은 것이다.
+CM33 이 실제로 도는지는 CLI 로 본다. `state` 가 `RUNNING` 이고 `alive` 증분이 0 이 아니어야
+한다. `BUILD_CM33=OFF` 로 빌드했다면 `DISABLED` 가 나온다 — CPU0 이 CPU1 을 아예 깨우지
+않는다.
 
 ```
-cli# thread cpu1
-magic   : 0x544D5348
-alive   : 28  (+4 / 500ms)
-tick    : 3151 ms (+504)
+cli# ipc info
+peer       : CPU1 (Cortex-M33)
+image      : 있음
+state      : RUNNING
+boot time  : 1 ms
+alive      : 69  (+4 / 500ms)
+tick       : 8571 ms  (+504)
+running    : 예
 ```
 
 ---

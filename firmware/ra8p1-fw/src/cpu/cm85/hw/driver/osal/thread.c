@@ -133,36 +133,10 @@ void cliThread(cli_args_t *args)
     ret = true;
   }
 
-  if (args->argc == 1 && args->isStr(0, "cpu1"))
-  {
-    //-- CPU1 이 공유 블록에 남기는 흔적을 본다. alive 가 늘어나면 살아 있는 것이다.
-    //
-    if (g_shared.magic != SHARED_MAGIC)
-    {
-      cliPrintf("CPU1 응답 없음 (magic 0x%08X)\n", (unsigned)g_shared.magic);
-    }
-    else
-    {
-      uint32_t a0 = g_shared.cpu1_alive;
-      uint32_t t0 = g_shared.cpu1_tick;
-
-      delay(500);
-
-      cliPrintf("magic   : 0x%08X\n", (unsigned)g_shared.magic);
-      cliPrintf("version : %d\n", (int)g_shared.version);
-      cliPrintf("alive   : %d  (+%d / 500ms)\n",
-                (int)g_shared.cpu1_alive, (int)(g_shared.cpu1_alive - a0));
-      cliPrintf("tick    : %d ms  (+%d)\n",
-                (int)g_shared.cpu1_tick, (int)(g_shared.cpu1_tick - t0));
-    }
-    ret = true;
-  }
-
   if (ret == false)
   {
     cliPrintf("thread info\n");
     cliPrintf("thread cpu\n");
-    cliPrintf("thread cpu1\n");
   }
 }
 

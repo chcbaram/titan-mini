@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include "hw_def.h"
-#include "shared.h"
+#include "ipc.h"
 
 
 bool hwInit(void);

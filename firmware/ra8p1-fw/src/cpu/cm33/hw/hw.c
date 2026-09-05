@@ -3,5 +3,10 @@
 
 bool hwInit(void)
 {
+  //-- 공유 블록을 잡고 CPU0 에 살아 있음을 알린다.
+  //   magic 이 여기서 서면 CPU0 의 기동 대기가 풀린다.
+  //
+  ipcInit();
+
   return true;
 }

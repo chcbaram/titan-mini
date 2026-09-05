@@ -13,7 +13,7 @@ extern "C" {
 #include "log.h"
 #include "osal/thread.h"
 #include "event.h"
-#include "shared.h"
+#include "ipc.h"
 
 
 bool hwInit(void);

@@ -37,6 +37,18 @@
 #define _USE_HW_THREAD
 #define      HW_THREAD_MAX_CNT      8
 
+#define _USE_HW_IPC
+#define      HW_IPC_BOOT_TIMEOUT_MS    100
+#define      HW_IPC_ALIVE_TIMEOUT_MS   1000
+
+//-- CPU1 이미지를 함께 빌드했는지는 CMake 가 알려준다(-DBUILD_CM33=ON).
+//   정의가 없으면 이미지가 없는 것으로 본다 - 안 깨우는 쪽이 안전한 기본값이다.
+//   빌드하지 않았는데 깨우면 빈 MRAM 으로 뛰어 CPU1 이 폴트에 빠진다.
+//
+#ifndef _HW_DEF_CPU1_IMAGE
+#define      _HW_DEF_CPU1_IMAGE        0
+#endif
+
 
 //-- 스레드 우선순위와 스택
 //   configMAX_PRIORITIES 는 8 이다. 아이들이 0, 타이머 서비스가 7 을 쓴다.
@@ -55,6 +67,7 @@
 #define _USE_CLI_HW_EVENT            1
 #define _USE_CLI_HW_MODULE           1
 #define _USE_CLI_HW_INDICATOR          1
+#define _USE_CLI_HW_IPC              1
 
 
 #endif

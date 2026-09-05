@@ -9,4 +9,7 @@
 #define _DEF_BOARD_NAME           "TITAN-MINI-CM33"
 
 
+#define _USE_HW_IPC
+
+
 #endif

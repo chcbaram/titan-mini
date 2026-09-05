@@ -85,6 +85,10 @@ target_compile_definitions(${EXECUTABLE} PRIVATE
   -D_RA_CORE=CPU0
   -D_RA_ORDINAL=1
   -D_RENESAS_RA_
+
+  #-- CPU1 이미지를 함께 빌드했을 때만 CPU0 이 CPU1 을 깨운다.
+  #   빌드 구성과 실제 동작을 일치시킨다.
+  -D_HW_DEF_CPU1_IMAGE=$<BOOL:${BUILD_CM33}>
   )
 
 target_compile_options(${EXECUTABLE} PRIVATE
