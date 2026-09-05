@@ -14,6 +14,7 @@ MCU 가 바뀌면 bsp 와 hw/driver 는 다시 쓰지만 ap 는 그대로 간다
   hw/driver/  벤더 HAL 허용. 여기가 MCU 의존을 가두는 층이다
   bsp/        벤더 HAL 허용
   common/     벤더 HAL 금지. 다른 저장소와 그대로 공유하는 포터블 코드다
+  cpu/shared/ 벤더 HAL 금지. 두 코어가 합의해야 하는 규약이다
 """
 import re
 import sys
@@ -46,6 +47,7 @@ RULES = [
     ('cpu/cm85/ap',      False),
     ('cpu/cm33/ap',      False),
     ('common',           False),
+    ('cpu/shared',       False),
     ('cpu/cm85/hw/driver', True),
     ('cpu/cm33/hw/driver', True),
     ('cpu/cm85/bsp',     True),

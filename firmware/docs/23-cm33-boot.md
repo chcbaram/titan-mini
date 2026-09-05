@@ -144,7 +144,7 @@ Booting..CPU1  		: RUNNING (1 ms)
 CPU1 이 살아 있는지 CPU0 이 확인할 수단이 필요하다. SRAM 공유 구간에 구조체 하나를 둔다.
 
 ```c
-/* src/common/shared.h */
+/* src/cpu/shared/shared.h */
 #define SHARED_MAGIC   0x544D5348UL   /* "TMSH" */
 
 typedef struct
@@ -241,8 +241,17 @@ void         ipcUpdate(void);      // 상대 코어가 자기 생존을 알린�
 > 기존 `NU87-TinyDK` 도 같은 자리에 `ipc.h` 를 쓴다.
 >
 > 반면 `shared.h` 는 API 가 아니라 **이 프로젝트 두 코어 사이의 데이터 규약**이라
-> `common/hw/include/` 가 아니라 `common/` 바로 아래 둔다. `def.h` · `evt_code.h` 와
-> 같은 성격이다.
+> `src/cpu/shared/` 에 둔다. 어느 한 코어가 소유하지 않는, 두 코어가 합의해야 하는
+> 것들의 자리다. 앞으로 IPC 메시지 정의처럼 양쪽이 같아야 하는 것이 여기 모인다.
+>
+> 코어별 `bsp/` 에 각각 두는 안도 검토했지만 접었다. 두 벌이 되면 **바이트 단위로
+> 같아야** 하는데 그걸 강제할 수단이 없다. `version` 이 잡아주는 것은 버전을 올렸을
+> 때뿐이고, 필드 순서만 바꾸고 버전을 그대로 두면 한쪽은 `peer_alive` 를 다른 쪽은
+> `peer_tick` 을 같은 오프셋으로 읽는다. 컴파일도 링크도 통과한다.
+>
+> CPU1 쪽에만 두고 CPU0 이 가로질러 include 하는 안도 접었다. 워크스페이스가 상대
+> 코어 폴더를 숨기므로 CM85 작업 중 이 헤더가 탐색기와 검색 양쪽에서 사라지고,
+> `BUILD_CM33=OFF` 가 기본이라 **안 만드는 코어의 폴더에 기본 빌드가 의존**하게 된다.
 >
 > 공개 헤더에 `extern` 을 두지 않는다. 전역 변수를 노출하는 대신 함수로만 연다.
 

@@ -45,6 +45,7 @@ set(SHARED_INC_DIRS
   ${SHARED_DIR}/common
   ${SHARED_DIR}/common/core
   ${SHARED_DIR}/common/hw/include
+  ${SHARED_DIR}/cpu/shared      # 두 코어가 합의해야 하는 규약 (shared.h)
   ${SHARED_DIR}/lib
 
   ${RA_SDK_DIR}/ra/arm/CMSIS_6/CMSIS/Core/Include

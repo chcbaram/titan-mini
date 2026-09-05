@@ -25,13 +25,14 @@ firmware/
         │   ├── core/{qbuffer,util_core}.{c,h}
         │   └── hw/include/        led.h uart.h cli.h ... 공용 드라이버 API 헤더
         ├── cpu/                   ── 코어별 손으로 쓰는 코드 ──
+        │   ├── shared/            두 코어가 합의해야 하는 규약 (shared.h)
         │   ├── cm85/              CPU0 (Cortex-M85)
         │   │   ├── CMakeLists.txt
         │   │   ├── main.c  main.h
         │   │   ├── ap/    ap.c  ap.h  ap_def.h
         │   │   ├── bsp/   bsp.c  bsp.h
         │   │   └── hw/    hw.c  hw.h  hw_def.h  driver/
-        │   └── cm33/              CPU1 (Cortex-M33) — 스켈레톤
+        │   └── cm33/              CPU1 (Cortex-M33)
         └── lib/                   ── 벤더 ──
             └── ra_sdk/
                 ├── ra/            FSP 소스 + CMSIS 6 Core (코어 공유)
@@ -42,6 +43,13 @@ firmware/
 
 `src/common/core/`(qbuffer, util_core)와 겹치지 않도록 코어 디렉터리는 `core` 가 아니라 **`cpu`** 다. FSP 도 `_RA_CORE=CPU0` 처럼 CPU 로 부른다.
 
+`cpu/shared/` 는 **두 코어가 합의해야 하는 것**의 자리다. 어느 한 코어가 소유하지 않으므로
+`cm85/` 나 `cm33/` 안에 두지 않는다. 지금은 공유 블록 레이아웃(`shared.h`)뿐이고, 앞으로
+IPC 메시지 정의처럼 양쪽이 같아야 하는 것이 여기 모인다.
+
+`common/` 에 두지 않는 이유는 아래 계층 규칙과 같다 — `common/` 은 MCU 가 바뀌어도
+그대로 가야 하는데, 이건 이 보드 두 코어 사이의 규약이라 프로젝트마다 다르다.
+
 ### 계층 규칙 — ap 는 벤더 HAL 을 모른다
 
 이 프로젝트의 이식성은 규칙 하나에 걸려 있다. **MCU 가 바뀌면 `bsp` 와 `hw/driver` 는 다시
@@ -51,6 +59,7 @@ firmware/
 |---|---|---|
 | `ap/` | **금지** | 애플리케이션. `hw/` 의 공용 API 만 쓴다 |
 | `common/` | **금지** | 다른 저장소와 그대로 공유하는 포터블 코드 |
+| `cpu/shared/` | **금지** | 두 코어가 합의해야 하는 규약. 프로젝트마다 다르다 |
 | `hw/driver/` | 허용 | **여기가 MCU 의존을 가두는 층이다** |
 | `bsp/` | 허용 | MCU 초기화, 클럭, 시간 |
 

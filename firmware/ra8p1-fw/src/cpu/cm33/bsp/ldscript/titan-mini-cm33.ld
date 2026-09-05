@@ -20,7 +20,7 @@ SECTIONS
    *
    * NOLOAD 인 이유는 이미지에 담지도 초기화하지도 않기 위해서다. 초기화하면
    * 나중에 부팅한 코어가 상대 코어가 써 둔 값을 밀어 버린다. 유효성은 magic 으로
-   * 판단한다. (src/common/hw/include/shared.h)
+   * 판단한다. (src/cpu/shared/shared.h)
    */
   .shared 0x221C0000 (NOLOAD) :
   {
