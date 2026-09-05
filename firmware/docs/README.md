@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | 보드 | Titan Mini HW:V1.0 · MCU `R7KA8P1KFLCAC` (289 BGA) |
-| 디버거 | HSLink (CMSIS-DAP). 가상 시리얼이 보드 UART1(P707/P706)에도 연결됨 |
+| 디버거 | HSLink (CMSIS-DAP). 가상 시리얼이 H1 커넥터의 SCI2(P801/P802)에 연결됨 |
 | 펌웨어 | `firmware/ra8p1-fw` — CM85 부팅 + **LED · UART · CLI · FreeRTOS · 모듈 구조 동작 확인** |
 | FSP | v6.6.0, RASC 생성물 커밋 방식. 보드는 `board.custom` |
 | 빌드 | FLASH 38,248 B / 1 MB (3.65%) · RAM 78,332 B / 1872 KB (4.09%) |

@@ -106,10 +106,10 @@ extern uint32_t __ospi1_cs0_zero_nocache$$Base;
 extern uint32_t __ospi1_cs0_zero_nocache$$Limit;
 extern uint32_t __ospi1_cs0_zero$$Base;
 extern uint32_t __ospi1_cs0_zero$$Limit;
-extern uint32_t __itcm_zero$$Base;
-extern uint32_t __itcm_zero$$Limit;
-extern uint32_t __dtcm_zero$$Base;
-extern uint32_t __dtcm_zero$$Limit;
+extern uint32_t __ctcm_zero$$Base;
+extern uint32_t __ctcm_zero$$Limit;
+extern uint32_t __stcm_zero$$Base;
+extern uint32_t __stcm_zero$$Limit;
 extern uint32_t __ram_zero_nocache$$Base;
 extern uint32_t __ram_zero_nocache$$Limit;
 extern uint32_t __ram_zero$$Base;
@@ -122,8 +122,8 @@ static const bsp_init_zero_info_t zero_list[] =
   {.p_base = &__ospi0_cs0_zero$$Base, .p_limit = &__ospi0_cs0_zero$$Limit,.type={.copy_64 = 0, .external = 1, .source_type = INIT_MEM_ZERO, .destination_type = INIT_MEM_OSPI0_CS0}},
   {.p_base = &__ospi1_cs0_zero_nocache$$Base, .p_limit = &__ospi1_cs0_zero_nocache$$Limit,.type={.copy_64 = 0, .external = 1, .source_type = INIT_MEM_ZERO, .destination_type = INIT_MEM_OSPI1_CS0}},
   {.p_base = &__ospi1_cs0_zero$$Base, .p_limit = &__ospi1_cs0_zero$$Limit,.type={.copy_64 = 0, .external = 1, .source_type = INIT_MEM_ZERO, .destination_type = INIT_MEM_OSPI1_CS0}},
-  {.p_base = &__itcm_zero$$Base, .p_limit = &__itcm_zero$$Limit,.type={.copy_64 = 1, .external = 0, .source_type = INIT_MEM_ZERO, .destination_type = INIT_MEM_ITCM}},
-  {.p_base = &__dtcm_zero$$Base, .p_limit = &__dtcm_zero$$Limit,.type={.copy_64 = 1, .external = 0, .source_type = INIT_MEM_ZERO, .destination_type = INIT_MEM_DTCM}},
+  {.p_base = &__ctcm_zero$$Base, .p_limit = &__ctcm_zero$$Limit,.type={.copy_64 = 0, .external = 0, .source_type = INIT_MEM_ZERO, .destination_type = INIT_MEM_CTCM}},
+  {.p_base = &__stcm_zero$$Base, .p_limit = &__stcm_zero$$Limit,.type={.copy_64 = 0, .external = 0, .source_type = INIT_MEM_ZERO, .destination_type = INIT_MEM_STCM}},
   {.p_base = &__ram_zero_nocache$$Base, .p_limit = &__ram_zero_nocache$$Limit,.type={.copy_64 = 0, .external = 0, .source_type = INIT_MEM_ZERO, .destination_type = INIT_MEM_RAM}},
   {.p_base = &__ram_zero$$Base, .p_limit = &__ram_zero$$Limit,.type={.copy_64 = 0, .external = 0, .source_type = INIT_MEM_ZERO, .destination_type = INIT_MEM_RAM}}
 };
@@ -164,30 +164,30 @@ extern uint32_t __ospi1_cs0_from_data_flash$$Load;
 extern uint32_t __ospi1_cs0_from_flash$$Base;
 extern uint32_t __ospi1_cs0_from_flash$$Limit;
 extern uint32_t __ospi1_cs0_from_flash$$Load;
-extern uint32_t __itcm_from_ospi0_cs1$$Base;
-extern uint32_t __itcm_from_ospi0_cs1$$Limit;
-extern uint32_t __itcm_from_ospi0_cs1$$Load;
-extern uint32_t __itcm_from_ospi1_cs1$$Base;
-extern uint32_t __itcm_from_ospi1_cs1$$Limit;
-extern uint32_t __itcm_from_ospi1_cs1$$Load;
-extern uint32_t __itcm_from_data_flash$$Base;
-extern uint32_t __itcm_from_data_flash$$Limit;
-extern uint32_t __itcm_from_data_flash$$Load;
-extern uint32_t __itcm_from_flash$$Base;
-extern uint32_t __itcm_from_flash$$Limit;
-extern uint32_t __itcm_from_flash$$Load;
-extern uint32_t __dtcm_from_ospi0_cs1$$Base;
-extern uint32_t __dtcm_from_ospi0_cs1$$Limit;
-extern uint32_t __dtcm_from_ospi0_cs1$$Load;
-extern uint32_t __dtcm_from_ospi1_cs1$$Base;
-extern uint32_t __dtcm_from_ospi1_cs1$$Limit;
-extern uint32_t __dtcm_from_ospi1_cs1$$Load;
-extern uint32_t __dtcm_from_data_flash$$Base;
-extern uint32_t __dtcm_from_data_flash$$Limit;
-extern uint32_t __dtcm_from_data_flash$$Load;
-extern uint32_t __dtcm_from_flash$$Base;
-extern uint32_t __dtcm_from_flash$$Limit;
-extern uint32_t __dtcm_from_flash$$Load;
+extern uint32_t __ctcm_from_ospi0_cs1$$Base;
+extern uint32_t __ctcm_from_ospi0_cs1$$Limit;
+extern uint32_t __ctcm_from_ospi0_cs1$$Load;
+extern uint32_t __ctcm_from_ospi1_cs1$$Base;
+extern uint32_t __ctcm_from_ospi1_cs1$$Limit;
+extern uint32_t __ctcm_from_ospi1_cs1$$Load;
+extern uint32_t __ctcm_from_data_flash$$Base;
+extern uint32_t __ctcm_from_data_flash$$Limit;
+extern uint32_t __ctcm_from_data_flash$$Load;
+extern uint32_t __ctcm_from_flash$$Base;
+extern uint32_t __ctcm_from_flash$$Limit;
+extern uint32_t __ctcm_from_flash$$Load;
+extern uint32_t __stcm_from_ospi0_cs1$$Base;
+extern uint32_t __stcm_from_ospi0_cs1$$Limit;
+extern uint32_t __stcm_from_ospi0_cs1$$Load;
+extern uint32_t __stcm_from_ospi1_cs1$$Base;
+extern uint32_t __stcm_from_ospi1_cs1$$Limit;
+extern uint32_t __stcm_from_ospi1_cs1$$Load;
+extern uint32_t __stcm_from_data_flash$$Base;
+extern uint32_t __stcm_from_data_flash$$Limit;
+extern uint32_t __stcm_from_data_flash$$Load;
+extern uint32_t __stcm_from_flash$$Base;
+extern uint32_t __stcm_from_flash$$Limit;
+extern uint32_t __stcm_from_flash$$Load;
 extern uint32_t __ram_from_ospi0_cs1$$Base;
 extern uint32_t __ram_from_ospi0_cs1$$Limit;
 extern uint32_t __ram_from_ospi0_cs1$$Load;
@@ -214,14 +214,14 @@ static const bsp_init_copy_info_t copy_list[] =
   {.p_base = &__ospi1_cs0_from_ospi1_cs1$$Base, .p_limit = &__ospi1_cs0_from_ospi1_cs1$$Limit, .p_load = &__ospi1_cs0_from_ospi1_cs1$$Load,.type={.copy_64 = 0, .external = 1, .source_type = INIT_MEM_OSPI1_CS1, .destination_type = INIT_MEM_OSPI1_CS0}},
   {.p_base = &__ospi1_cs0_from_data_flash$$Base, .p_limit = &__ospi1_cs0_from_data_flash$$Limit, .p_load = &__ospi1_cs0_from_data_flash$$Load,.type={.copy_64 = 0, .external = 1, .source_type = INIT_MEM_DATA_FLASH, .destination_type = INIT_MEM_OSPI1_CS0}},
   {.p_base = &__ospi1_cs0_from_flash$$Base, .p_limit = &__ospi1_cs0_from_flash$$Limit, .p_load = &__ospi1_cs0_from_flash$$Load,.type={.copy_64 = 0, .external = 1, .source_type = INIT_MEM_FLASH, .destination_type = INIT_MEM_OSPI1_CS0}},
-  {.p_base = &__itcm_from_ospi0_cs1$$Base, .p_limit = &__itcm_from_ospi0_cs1$$Limit, .p_load = &__itcm_from_ospi0_cs1$$Load,.type={.copy_64 = 1, .external = 1, .source_type = INIT_MEM_OSPI0_CS1, .destination_type = INIT_MEM_ITCM}},
-  {.p_base = &__itcm_from_ospi1_cs1$$Base, .p_limit = &__itcm_from_ospi1_cs1$$Limit, .p_load = &__itcm_from_ospi1_cs1$$Load,.type={.copy_64 = 1, .external = 1, .source_type = INIT_MEM_OSPI1_CS1, .destination_type = INIT_MEM_ITCM}},
-  {.p_base = &__itcm_from_data_flash$$Base, .p_limit = &__itcm_from_data_flash$$Limit, .p_load = &__itcm_from_data_flash$$Load,.type={.copy_64 = 1, .external = 0, .source_type = INIT_MEM_DATA_FLASH, .destination_type = INIT_MEM_ITCM}},
-  {.p_base = &__itcm_from_flash$$Base, .p_limit = &__itcm_from_flash$$Limit, .p_load = &__itcm_from_flash$$Load,.type={.copy_64 = 1, .external = 0, .source_type = INIT_MEM_FLASH, .destination_type = INIT_MEM_ITCM}},
-  {.p_base = &__dtcm_from_ospi0_cs1$$Base, .p_limit = &__dtcm_from_ospi0_cs1$$Limit, .p_load = &__dtcm_from_ospi0_cs1$$Load,.type={.copy_64 = 1, .external = 1, .source_type = INIT_MEM_OSPI0_CS1, .destination_type = INIT_MEM_DTCM}},
-  {.p_base = &__dtcm_from_ospi1_cs1$$Base, .p_limit = &__dtcm_from_ospi1_cs1$$Limit, .p_load = &__dtcm_from_ospi1_cs1$$Load,.type={.copy_64 = 1, .external = 1, .source_type = INIT_MEM_OSPI1_CS1, .destination_type = INIT_MEM_DTCM}},
-  {.p_base = &__dtcm_from_data_flash$$Base, .p_limit = &__dtcm_from_data_flash$$Limit, .p_load = &__dtcm_from_data_flash$$Load,.type={.copy_64 = 1, .external = 0, .source_type = INIT_MEM_DATA_FLASH, .destination_type = INIT_MEM_DTCM}},
-  {.p_base = &__dtcm_from_flash$$Base, .p_limit = &__dtcm_from_flash$$Limit, .p_load = &__dtcm_from_flash$$Load,.type={.copy_64 = 1, .external = 0, .source_type = INIT_MEM_FLASH, .destination_type = INIT_MEM_DTCM}},
+  {.p_base = &__ctcm_from_ospi0_cs1$$Base, .p_limit = &__ctcm_from_ospi0_cs1$$Limit, .p_load = &__ctcm_from_ospi0_cs1$$Load,.type={.copy_64 = 0, .external = 1, .source_type = INIT_MEM_OSPI0_CS1, .destination_type = INIT_MEM_CTCM}},
+  {.p_base = &__ctcm_from_ospi1_cs1$$Base, .p_limit = &__ctcm_from_ospi1_cs1$$Limit, .p_load = &__ctcm_from_ospi1_cs1$$Load,.type={.copy_64 = 0, .external = 1, .source_type = INIT_MEM_OSPI1_CS1, .destination_type = INIT_MEM_CTCM}},
+  {.p_base = &__ctcm_from_data_flash$$Base, .p_limit = &__ctcm_from_data_flash$$Limit, .p_load = &__ctcm_from_data_flash$$Load,.type={.copy_64 = 0, .external = 0, .source_type = INIT_MEM_DATA_FLASH, .destination_type = INIT_MEM_CTCM}},
+  {.p_base = &__ctcm_from_flash$$Base, .p_limit = &__ctcm_from_flash$$Limit, .p_load = &__ctcm_from_flash$$Load,.type={.copy_64 = 0, .external = 0, .source_type = INIT_MEM_FLASH, .destination_type = INIT_MEM_CTCM}},
+  {.p_base = &__stcm_from_ospi0_cs1$$Base, .p_limit = &__stcm_from_ospi0_cs1$$Limit, .p_load = &__stcm_from_ospi0_cs1$$Load,.type={.copy_64 = 0, .external = 1, .source_type = INIT_MEM_OSPI0_CS1, .destination_type = INIT_MEM_STCM}},
+  {.p_base = &__stcm_from_ospi1_cs1$$Base, .p_limit = &__stcm_from_ospi1_cs1$$Limit, .p_load = &__stcm_from_ospi1_cs1$$Load,.type={.copy_64 = 0, .external = 1, .source_type = INIT_MEM_OSPI1_CS1, .destination_type = INIT_MEM_STCM}},
+  {.p_base = &__stcm_from_data_flash$$Base, .p_limit = &__stcm_from_data_flash$$Limit, .p_load = &__stcm_from_data_flash$$Load,.type={.copy_64 = 0, .external = 0, .source_type = INIT_MEM_DATA_FLASH, .destination_type = INIT_MEM_STCM}},
+  {.p_base = &__stcm_from_flash$$Base, .p_limit = &__stcm_from_flash$$Limit, .p_load = &__stcm_from_flash$$Load,.type={.copy_64 = 0, .external = 0, .source_type = INIT_MEM_FLASH, .destination_type = INIT_MEM_STCM}},
   {.p_base = &__ram_from_ospi0_cs1$$Base, .p_limit = &__ram_from_ospi0_cs1$$Limit, .p_load = &__ram_from_ospi0_cs1$$Load,.type={.copy_64 = 0, .external = 1, .source_type = INIT_MEM_OSPI0_CS1, .destination_type = INIT_MEM_RAM}},
   {.p_base = &__ram_from_ospi1_cs1$$Base, .p_limit = &__ram_from_ospi1_cs1$$Limit, .p_load = &__ram_from_ospi1_cs1$$Load,.type={.copy_64 = 0, .external = 1, .source_type = INIT_MEM_OSPI1_CS1, .destination_type = INIT_MEM_RAM}},
   {.p_base = &__ram_from_data_flash$$Base, .p_limit = &__ram_from_data_flash$$Limit, .p_load = &__ram_from_data_flash$$Load,.type={.copy_64 = 0, .external = 0, .source_type = INIT_MEM_DATA_FLASH, .destination_type = INIT_MEM_RAM}},
