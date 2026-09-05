@@ -24,7 +24,9 @@ ROOT = Path(__file__).resolve().parent.parent / 'src'
 # FSP / CMSIS 벤더 심볼. 헤더 이름과 식별자 양쪽을 본다.
 VENDOR = re.compile(
     r'\b('
-    r'R_[A-Z][A-Z0-9_]*'          # R_IOPORT_Open, R_PORT1, R_BSP_SoftwareDelay
+    r'R_[A-Z][A-Za-z0-9_]*'       # R_IOPORT_Open, R_PORT1, R_BSP_SoftwareDelay
+                                  #   FSP 함수는 R_SCI_B_UART_Write 처럼 대소문자가
+                                  #   섞이므로 뒤쪽에 소문자를 허용해야 한다
     r'|FSP_[A-Z_]+'               # FSP_SUCCESS
     r'|fsp_err_t|fsp_[a-z_]+_t'
     r'|BSP_[A-Z0-9_]+'            # BSP_IO_PORT_01_PIN_09
@@ -55,6 +57,39 @@ RULES = [
 ]
 
 
+def strip_comments(text: str) -> list:
+    """줄 번호를 유지한 채 주석을 지운다.
+
+    주석 안의 매크로 이름까지 잡으면 오탐이 난다. 설계 근거를 설명하려면 벤더
+    심볼을 언급할 수밖에 없다.
+    """
+    out = []
+    in_block = False
+
+    for line in text.splitlines():
+        buf = []
+        i = 0
+        while i < len(line):
+            if in_block:
+                end = line.find('*/', i)
+                if end < 0:
+                    i = len(line)
+                else:
+                    in_block = False
+                    i = end + 2
+            elif line.startswith('/*', i):
+                in_block = True
+                i += 2
+            elif line.startswith('//', i):
+                break
+            else:
+                buf.append(line[i])
+                i += 1
+        out.append(''.join(buf))
+
+    return out
+
+
 def rule_for(rel: str):
     for prefix, allowed in RULES:
         if rel.startswith(prefix):
@@ -81,14 +116,13 @@ def main() -> int:
             continue
 
         checked += 1
-        for num, line in enumerate(path.read_text(errors='replace').splitlines(), 1):
-            code = line.split('//')[0]
+        for num, code in enumerate(strip_comments(path.read_text(errors='replace')), 1):
             if not code.strip():
                 continue
 
             hit = VENDOR_HEADER.search(code) or VENDOR.search(code)
             if hit:
-                problems.append(f'{rel}:{num}  {hit.group(1)}   {line.strip()[:70]}')
+                problems.append(f'{rel}:{num}  {hit.group(1)}   {code.strip()[:70]}')
 
     for p in problems:
         print(f'  위반  {p}')
