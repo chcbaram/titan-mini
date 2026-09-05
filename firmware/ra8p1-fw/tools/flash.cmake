@@ -42,12 +42,23 @@ else()
 endif()
 
 if(PYOCD_EXECUTABLE AND RA_DFP_PACK)
+  # 두 코어 이미지는 MRAM 의 서로 다른 파티션에 들어간다. pyocd 는 여러 ELF 를
+  # 한 번에 받으므로 CM33 이 켜져 있으면 같이 넘긴다.
+  #
+  set(_flash_elfs $<TARGET_FILE:${PRJ_NAME}-cm85.elf>)
+  set(_flash_deps ${PRJ_NAME}-cm85.elf)
+
+  if(BUILD_CM33)
+    list(APPEND _flash_elfs $<TARGET_FILE:${PRJ_NAME}-cm33.elf>)
+    list(APPEND _flash_deps ${PRJ_NAME}-cm33.elf)
+  endif()
+
   add_custom_target(flash
     COMMAND ${PYOCD_EXECUTABLE} flash
             --target ${PYOCD_TARGET}
             --pack  ${RA_DFP_PACK}
-            $<TARGET_FILE:${PRJ_NAME}-cm85.elf>
-    DEPENDS ${PRJ_NAME}-cm85.elf
+            ${_flash_elfs}
+    DEPENDS ${_flash_deps}
     USES_TERMINAL
     COMMENT "pyocd flash (${PYOCD_TARGET})"
     )

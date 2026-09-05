@@ -51,17 +51,22 @@ set(SHARED_INC_DIRS
   ${RA_SDK_DIR}/ra/fsp/inc
   ${RA_SDK_DIR}/ra/fsp/inc/api
   ${RA_SDK_DIR}/ra/fsp/inc/instances
+  ${RA_SDK_DIR}          # partition.h
   )
 
 # FSP 는 glob 하지 않고 쓰는 모듈만 명시한다.
 #   - ra_cfg/fsp_cfg 에 해당 모듈의 설정 헤더가 있어야 컴파일된다
-#   - 기능을 추가할 때 여기에 한 줄씩 늘린다
-#   (전체 glob 을 하면 설정 헤더가 없는 모듈 소스가 같이 잡혀 빌드가 깨진다)
+#   - 전체 glob 을 하면 설정 헤더가 없는 모듈 소스가 같이 잡혀 빌드가 깨진다
+#
+# 목록은 코어별이다. 설정 헤더가 코어마다 다르기 때문이다. 예를 들어 SCI UART 는
+# CPU0 만 쓰므로 cm33 의 ra_cfg 에는 r_sci_b_uart_cfg.h 가 없다. 공통 목록에 넣으면
+# CPU1 빌드가 그 헤더를 못 찾고 깨진다.
+#
+# 여기에는 두 코어가 반드시 쓰는 것만 둔다. 나머지는 코어별 CMakeLists 에서 더한다.
 #
 file(GLOB_RECURSE RA_SDK_SRC_FILES CONFIGURE_DEPENDS
   ${RA_SDK_DIR}/ra/fsp/src/bsp/*.c
   ${RA_SDK_DIR}/ra/fsp/src/r_ioport/*.c
-  ${RA_SDK_DIR}/ra/fsp/src/r_sci_b_uart/*.c
   )
 
 # FreeRTOS 커널. RASC 가 ra/aws 로 가져온 것을 쓴다.

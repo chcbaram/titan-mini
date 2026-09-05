@@ -8,13 +8,14 @@
 |---|---|
 | 보드 | Titan Mini HW:V1.0 · MCU `R7KA8P1KFLCAC` (289 BGA) |
 | 디버거 | HSLink (CMSIS-DAP). 가상 시리얼이 H1 커넥터의 SCI2(P801/P802)에 연결됨 |
-| 펌웨어 | `firmware/ra8p1-fw` — CM85 부팅 + **LED · UART · CLI · FreeRTOS · 모듈 구조 동작 확인** |
+| 펌웨어 | `firmware/ra8p1-fw` — CM85 **LED · UART · CLI · FreeRTOS · 모듈 · 이벤트** + **CM33 기동** |
 | FSP | v6.6.0, RASC 생성물 커밋 방식. 보드는 `board.custom` |
-| 빌드 | FLASH 38,248 B / 1 MB (3.65%) · RAM 78,332 B / 1872 KB (4.09%) |
+| 빌드 | CM85 FLASH 38,512 B / 768 KB · RAM 78,340 B / 1408 KB |
 | RTOS | FreeRTOS 11.1.0 (heap_4 64 KB) · 모듈 자동 등록(`.module` 섹션) · 이벤트 버스 |
+| 파티션 | MRAM CPU0 768 KB / CPU1 256 KB · SRAM CPU0 1408 KB / CPU1 384 KB / 공유 80 KB |
 | 콘솔 | **SCI2 (P801/P802, H1 커넥터)** ← HSLink 가상 시리얼. 115200 8N1 |
 | 클럭 | **1000 MHz** (Cortex-M85) |
-| CM33 | 스켈레톤. `BUILD_CM33=OFF` |
+| CM33 | **기동 확인**(23번). `-DBUILD_CM33=ON`. IPC·캐시·RTOS 는 이후 |
 | 부트로더 | 설계만 완료([05](05-boot-architecture.md)). 구현은 40번 |
 
 ### 바로 다시 시작하기
@@ -37,21 +38,22 @@ VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
 
 ### 다음 작업
 
-1. **CM33 기동** — 파티션 매크로를 직접 정의해야 한다 ([04장 3절](04-dualcore.md#3-파티션-매크로를-직접-정의해야-한다))
-2. GPIO / 버튼 / swtimer
-3. **MRAM + NVS** — 여기서 ITCM 재배치를 실측해 부트로더의 위험을 미리 없앤다
-4. **USB** — CDC 를 두 번째 CLI 채널로. TinyUSB 포팅 유무를 여기서 판정한다
-5. OSPI 플래시 → SDRAM → SD/FatFs → I2C/IMU → SPI → 오디오
+1. GPIO / 버튼 / swtimer
+2. **MRAM + NVS** — 여기서 ITCM 재배치를 실측해 부트로더의 위험을 미리 없앤다
+3. **USB** — CDC 를 두 번째 CLI 채널로. TinyUSB 포팅 유무를 여기서 판정한다
+4. OSPI 플래시 → SDRAM → SD/FatFs → I2C/IMU → SPI → 오디오
 
 ### 미해결 과제
 
 | 과제 | 왜 중요한가 | 언제 |
 |---|---|---|
-| ITCM 재배치 실측 | MRAM 이 단일 뱅크라 부트로더 본체를 ITCM 에서 돌린다(설계 완료). 링크·복사가 실제로 되는지 확인 필요 | 40번 전 |
-| CM33 파티션 값 확정 | MRAM/SRAM 분할 크기. 지금은 초안 | 23번 |
-| SDRAM DQ0~DQ7 핀 | 회로도 파서가 일부를 놓쳤다 | 27번 |
-| 오디오 DSIN 핀 | 〃. 카메라 VIO_D2 와 충돌한다 | 34번 |
-| RA8P1 TinyUSB 포팅 유무 | 없으면 `r_usb_basic` + PCDC/PMSC 로 간다 | 35번 |
+| ITCM 재배치 실측 | MRAM 이 단일 뱅크라 부트로더 본체를 ITCM 에서 돌린다(설계 완료). `.itcm_code_from_flash` 가 실제로 복사돼 실행되는지, 인터럽트를 끈 상태에서 MRAM 기록이 되는지 | **25번** |
+| RA8P1 TinyUSB 포팅 유무 | 없으면 FSP `r_usb_basic` + PCDC/PMSC 로 간다. 부트로더 설계의 전제다 | **26번** |
+| SDRAM DQ0~DQ7 핀 | 회로도 파서가 일부를 놓쳤다. 페이지 이미지로 눈으로 확인해야 한다 | **28번** |
+| 오디오 DSIN 핀 | 〃. 카메라 VIO_D2 와 배타다 | **32번** |
+| 파티션 크기 재검토 | 지금 값은 초안이다. lwIP·LVGL 이 들어오면 CPU0 쪽이 모자랄 수 있다 | 50번 전후 |
+| DFP 팩의 CPU1 AP 매핑 | pdsc 에 `<debug Pname __ap>` 가 없어 CPU1 기동 후 pyOCD 가 죽는다. 임시 패치본을 `-DRA_DFP_PACK=` 로 쓰는 중. tools 세션에 정본 반영 요청함 ([23장 8절](23-cm33-boot.md#8-함정--cpu1-을-깨우면-pyocd-가-죽는다)) | 조기 |
+| 공유 영역 non-cacheable | D-cache 를 켜기 전에 MPU 로 잡아야 한다. 지금은 캐시가 꺼져 있어 문제가 안 드러난다 | 캐시 켜기 전 |
 
 ## 문서 번호 규칙
 
@@ -90,7 +92,7 @@ VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
 | [20-led.md](20-led.md) | RGB LED + 빌드/적재/검증 루프 | — | ✅ |
 | [21-uart-cli.md](21-uart-cli.md) | UART(SCI2) + log/cli | `weact-h750-mini`, `qmk-link` cli.c, `ti-am263` log.c | ✅ |
 | [22-freertos.md](22-freertos.md) | FreeRTOS + 모듈/스레드 구조 + 이벤트 버스 | `stm32h7-lvgl` `bsp/rtos/`, `NUCLEO-C5A3ZG` `ap/modules/`, `NU87-TinyDK` event.c | ✅ |
-| `23-cm33-boot.md` | CM33 기동, 코어간 IPC | FSP `bsp_ipc.c`, `NU87-TinyDK` ipc.c | 예정 |
+| [23-cm33-boot.md](23-cm33-boot.md) | CM33 기동, 파티션, 공유 블록 | FSP `bsp_common.h` | ✅ |
 | `24-gpio-button-swtimer.md` | GPIO / 버튼 / 소프트타이머 | `weact-h750-mini`, `qmk-link` | 예정 |
 | `25-mram-nvs.md` | 내부 MRAM R/W + 설정 저장 **+ ITCM 재배치 실측** | `NU87-TinyDK` nvs.c, FSP `mram` 예제 | 예정 |
 | `26-usb.md` | USB CDC / MSC | `weact-h750-mini` usb/ | 예정 |

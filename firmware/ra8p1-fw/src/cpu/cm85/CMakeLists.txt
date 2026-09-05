@@ -9,6 +9,14 @@ set(CORE_SDK   ${RA_SDK_DIR}/${CORE_NAME})   # FSP 설정·생성물은 벤더 �
 set(CORE_OUT   ${CMAKE_BINARY_DIR}/${CORE_NAME})
 
 
+# 이 코어만 쓰는 FSP 모듈. 공통 목록(RA_SDK_SRC_FILES)에 넣으면 설정 헤더가
+# 없는 CPU1 빌드가 깨진다.
+#
+file(GLOB RA_SDK_SRC_CORE CONFIGURE_DEPENDS
+  ${RA_SDK_DIR}/ra/fsp/src/r_sci_b_uart/*.c
+  )
+
+
 # 이 코어의 소스
 #
 file(GLOB SRC_FILES CONFIGURE_DEPENDS
@@ -40,6 +48,7 @@ add_executable(${EXECUTABLE}
   ${SRC_FILES_RA_GEN}
   ${SHARED_SRC_FILES}
   ${RA_SDK_SRC_FILES}
+  ${RA_SDK_SRC_CORE}
   ${FREERTOS_SRC_FILES}
   )
 
@@ -100,6 +109,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
 #
 set_source_files_properties(
   ${RA_SDK_SRC_FILES}
+  ${RA_SDK_SRC_CORE}
   ${FREERTOS_SRC_FILES}
   ${SRC_FILES_RA_GEN}
   TARGET_DIRECTORY ${EXECUTABLE}
