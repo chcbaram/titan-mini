@@ -34,8 +34,9 @@
   <text x="34" y="338"  class="sub">DFP·데이터시트의 1664 KB 는 틀린 값</text>
   <text x="336" y="304" class="addr" text-anchor="end">0x2200_0000</text>
 
-  <rect x="20"  y="360" width="330" height="40" rx="5" class="box" fill="#f3f4f6" stroke="#9ca3af"/>
-  <text x="34" y="385"  class="name" fill="#4b5563">주변장치  ·  CPU_CTRL 0x4000_F000  ·  PORT 0x4040_0000</text>
+  <rect x="20"  y="358" width="330" height="46" rx="5" class="box" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="34" y="380"  class="name" fill="#4b5563">주변장치</text>
+  <text x="34" y="396"  class="sub">CPU_CTRL 0x4000_F000 · I/O PORT 0x4040_0000</text>
 
   <!-- 외부 메모리 -->
   <text x="410" y="42" class="ttl">외부 메모리 창</text>

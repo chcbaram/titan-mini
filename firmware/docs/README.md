@@ -122,6 +122,13 @@ VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
 
 > 그림은 전부 SVG 다. 한글이 2칸 폭이라 코드블록 ASCII 아트는 정렬이 깨진다.
 
+손으로 쓴 SVG 라 브라우저로 열기 전에는 글자가 박스를 넘거나 서로 겹치는 것을 알기 어렵다.
+그림을 고치면 검사기를 돌린다 — viewBox 이탈 · 텍스트 겹침 · 박스 밖 삐져나옴을 잡는다.
+
+```bash
+python3 firmware/docs/check_svg.py
+```
+
 ## 출처
 
 | 약칭 | 문서 | 비고 |

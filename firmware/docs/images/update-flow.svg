@@ -17,7 +17,7 @@
   <text x="20" y="26" class="ttl">펌웨어 업데이트 흐름</text>
 
   <!-- 부팅 판정 -->
-  <rect x="20" y="46" width="230" height="120" rx="5" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/>
+  <rect x="20" y="46" width="240" height="120" rx="5" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/>
   <text x="34" y="68" class="b" fill="#4b5563">부팅 판정</text>
   <text x="34" y="90"  class="s">정상 리셋 + 유효 이미지</text>
   <text x="34" y="106" class="s">   → USB 를 열지 않고 바로 점프</text>
@@ -28,12 +28,12 @@
   <line x1="135" y1="168" x2="135" y2="192" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#au)"/>
 
   <!-- 1 수신 -->
-  <rect x="20" y="194" width="230" height="70" rx="5" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <rect x="20" y="194" width="240" height="70" rx="5" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
   <text x="34" y="216" class="b" fill="#1d4ed8">① 수신</text>
   <text x="34" y="236" class="s">USB CDC / MSC(UF2) 또는 UART</text>
   <text x="34" y="254" class="s">TinyUSB bare-metal · RTOS 없음</text>
 
-  <line x1="254" y1="229" x2="290" y2="229" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#au)"/>
+  <line x1="264" y1="229" x2="290" y2="229" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#au)"/>
 
   <!-- 2 스테이징 -->
   <rect x="292" y="194" width="230" height="70" rx="5" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
@@ -58,13 +58,13 @@
   <text x="306" y="356" class="s">r_mram · 32 바이트 단위 · ITCM 에서 실행하며 인터럽트를 끈다</text>
   <text x="306" y="373" class="s">기록 전에 이전 이미지를 QSPI 백업 슬롯으로 복사해 둔다</text>
 
-  <line x1="292" y1="337" x2="256" y2="337" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#au)"/>
+  <line x1="292" y1="337" x2="266" y2="337" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#au)"/>
 
   <!-- 5 점프 -->
-  <rect x="20" y="294" width="230" height="86" rx="5" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="20" y="294" width="240" height="86" rx="5" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
   <text x="34" y="316" class="b" fill="#6d28d9">⑤ CPU0 펌웨어로 점프</text>
-  <text x="34" y="336" class="s">CPU0 가 R_BSP_SecondaryCoreStart()</text>
-  <text x="34" y="352" class="s">로 CPU1 을 깨운다</text>
+  <text x="34" y="336" class="s">CPU0 가 CPU1 을 깨운다</text>
+  <text x="34" y="352" class="m">R_BSP_SecondaryCoreStart()</text>
   <text x="34" y="372" class="s">부트로더는 여기서 손을 뗀다</text>
 
   <!-- 롤백 -->

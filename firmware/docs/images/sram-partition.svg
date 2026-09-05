@@ -16,7 +16,6 @@
   <rect x="20" y="96" width="380" height="56" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
   <text x="34" y="120" class="b" fill="#15803d">CPU0 (Cortex-M85)</text>
   <text x="34" y="139" class="s">FreeRTOS 힙 · 드라이버 버퍼 · lwIP 풀</text>
-  <text x="386" y="120" class="m" text-anchor="end">0x2200_0000</text>
 
   <rect x="400" y="96" width="180" height="56" rx="5" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
   <text x="414" y="120" class="b" fill="#be185d">CPU1 (M33)</text>
@@ -26,7 +25,6 @@
   <text x="594" y="118" class="b" fill="#b45309" font-size="12.5">SHARED</text>
   <text x="594" y="135" class="s">non-cacheable</text>
   <text x="594" y="149" class="s">코어간 IPC 버퍼</text>
-  <text x="714" y="120" class="m" text-anchor="end">0x221D_3FFF</text>
 
   <!-- TCM -->
   <text x="20" y="196" class="lbl">코어 전용 TCM — 두 코어 모두 자기 것을 0x0000_0000 / 0x2000_0000 으로 본다</text>
