@@ -189,7 +189,7 @@ static bool cliModuleInit(void)
 ```
 [  ] moduleInit()
        count : 2
-       display          OK
+       indicator        OK
        cli              OK
 [  ] Thread Started : cli
 
@@ -197,7 +197,7 @@ cli# module info
 count : 2
 idx  name             pri  update event
 0    cli              6    -      -
-1    display          1    -      yes
+1    indicator        1    -      yes
 ```
 
 ### 링커 스크립트를 우리가 소유한다
@@ -281,7 +281,7 @@ MODULE_DEF(indicator)
 {
   .name     = "indicator",
   .priority = MODULE_PRI_HIGH,
-  .init     = displayInit,
+  .init     = indicatorInit,
   .event_cb = indicatorEvent,
 };
 
