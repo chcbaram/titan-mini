@@ -61,6 +61,7 @@ set(SHARED_INC_DIRS
 file(GLOB_RECURSE RA_SDK_SRC_FILES CONFIGURE_DEPENDS
   ${RA_SDK_DIR}/ra/fsp/src/bsp/*.c
   ${RA_SDK_DIR}/ra/fsp/src/r_ioport/*.c
+  ${RA_SDK_DIR}/ra/fsp/src/r_sci_b_uart/*.c
   )
 
 

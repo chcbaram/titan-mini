@@ -8,9 +8,11 @@
 |---|---|
 | 보드 | Titan Mini HW:V1.0 · MCU `R7KA8P1KFLCAC` (289 BGA) |
 | 디버거 | HSLink (CMSIS-DAP). 가상 시리얼이 보드 UART1(P707/P706)에도 연결됨 |
-| 펌웨어 | `firmware/ra8p1-fw` — CM85 부팅 + **RGB LED 점멸 동작 확인** |
+| 펌웨어 | `firmware/ra8p1-fw` — CM85 부팅 + **RGB LED · UART · CLI 동작 확인** |
 | FSP | v6.6.0, RASC 생성물 커밋 방식. 보드는 `board.custom` |
-| 빌드 | FLASH 4,764 B / 1 MB (0.45%) · RAM 1,210 B / 1872 KB (0.06%) |
+| 빌드 | FLASH 25,912 B / 1 MB (2.47%) · RAM 8,200 B / 1872 KB (0.43%) |
+| 콘솔 | **SCI2 (P801/P802, H1 커넥터)** ← HSLink 가상 시리얼. 115200 8N1 |
+| 클럭 | **1000 MHz** (Cortex-M85) |
 | CM33 | 스켈레톤. `BUILD_CM33=OFF` |
 | 부트로더 | 설계만 완료([05](05-boot-architecture.md)). 구현은 40번 |
 
@@ -23,6 +25,8 @@ cd firmware/ra8p1-fw
 cmake -S . -B build -G Ninja
 cmake --build build -j8
 cmake --build build --target flash      # LED3 빨강 500ms 점멸
+
+screen /dev/cu.usbmodem1412302 115200   # 부팅 배너 + CLI (나갈 때 Ctrl-A K)
 ```
 
 VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
@@ -32,12 +36,9 @@ VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
 
 ### 다음 작업
 
-1. **UART + CLI** — UART1(P707/P706) + `logPrintf` + 부팅 배너 ([21](21-uart-cli.md) 예정)
-   - HSLink 가상 시리얼이 이미 붙어 있어 케이블 추가가 필요 없다
-   - FSP `r_sci_uart` 모듈 추가 절차는 [11장 7절](11-fsp-config.md#7-fsp-모듈을-추가할-때)
-2. **FreeRTOS** — 이후 FatFs·lwIP·USB·LVGL 이 전부 전제하므로 일찍 넣는다. 포트는 FSP `rm_freertos_port`
-3. **CM33 기동** — 파티션 매크로를 직접 정의해야 한다 ([04장 3절](04-dualcore.md#3-파티션-매크로를-직접-정의해야-한다))
-4. GPIO / 버튼 / swtimer → MRAM / NVS → OSPI 플래시 → SDRAM → SD/FatFs
+1. **FreeRTOS** — 이후 FatFs·lwIP·USB·LVGL 이 전부 전제하므로 일찍 넣는다. 포트는 FSP `rm_freertos_port` ([22](22-freertos.md) 예정)
+2. **CM33 기동** — 파티션 매크로를 직접 정의해야 한다 ([04장 3절](04-dualcore.md#3-파티션-매크로를-직접-정의해야-한다))
+3. GPIO / 버튼 / swtimer → MRAM / NVS → OSPI 플래시 → SDRAM → SD/FatFs
 
 ### 미해결 과제
 
@@ -48,6 +49,7 @@ VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
 | SDRAM DQ0~DQ7 핀 | 회로도 파서가 일부를 놓쳤다 | 27번 |
 | 오디오 DSIN 핀 | 〃. 카메라 VIO_D2 와 충돌한다 | 34번 |
 | RA8P1 TinyUSB 포팅 유무 | 없으면 `r_usb_basic` + PCDC/PMSC 로 간다 | 35번 |
+| 콘솔 SCI2 와 OSPI 8비트 겸용 | P801/P802 가 OSPI0 의 DQS·SIO6 이다. 옥탈로 가려면 콘솔을 SCI1 로 옮긴다 | 26번 |
 
 ## 문서 번호 규칙
 
@@ -84,7 +86,7 @@ VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
 | 문서 | 기능 | 참조 구현 | 상태 |
 |---|---|---|---|
 | [20-led.md](20-led.md) | RGB LED + 빌드/적재/검증 루프 | — | ✅ |
-| `21-uart-cli.md` | UART + log/cli | `weact-h750-mini` (2026-08-30), `qmk-link` cli.c | 예정 |
+| [21-uart-cli.md](21-uart-cli.md) | UART(SCI2) + log/cli | `weact-h750-mini`, `qmk-link` cli.c, `ti-am263` log.c | ✅ |
 | `22-freertos.md` | FreeRTOS + 스레드 OSAL | `stm32h7-lvgl` `bsp/rtos/`, FSP `rm_freertos_port` | 예정 |
 | `23-cm33-boot.md` | CM33 기동, 코어간 IPC | FSP `bsp_ipc.c`, `NU87-TinyDK` ipc.c | 예정 |
 | `24-gpio-button-swtimer.md` | GPIO / 버튼 / 소프트타이머 | `weact-h750-mini`, `qmk-link` | 예정 |
