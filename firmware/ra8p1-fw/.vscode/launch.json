@@ -1,0 +1,39 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug CM85 (pyOCD)",
+      "cwd": "${workspaceFolder}",
+      "executable": "./build/src/cm85/titan-mini-cm85.elf",
+      "request": "launch",
+      "type": "cortex-debug",
+      "runToEntryPoint": "main",
+      "showDevDebugOutput": "none",
+      "servertype": "pyocd",
+      "targetId": "r7ka8p1kf",
+      "serverArgs": [
+        "--pack", "${env:RENESAS_RA_TOOLS}/packs/Renesas.RA_DFP.6.6.0-fixed.pack"
+      ],
+      "svdFile": "${env:RENESAS_RA_TOOLS}/svd/R7KA8P1AD.svd",
+      "windows": {
+        "gdbPath": "${env:ARM_TOOLCHAIN_DIR}/arm-none-eabi-gdb.exe"
+      }
+    },
+    {
+      "name": "Attach CM85 (pyOCD)",
+      "cwd": "${workspaceFolder}",
+      "executable": "./build/src/cm85/titan-mini-cm85.elf",
+      "request": "attach",
+      "type": "cortex-debug",
+      "servertype": "pyocd",
+      "targetId": "r7ka8p1kf",
+      "serverArgs": [
+        "--pack", "${env:RENESAS_RA_TOOLS}/packs/Renesas.RA_DFP.6.6.0-fixed.pack"
+      ],
+      "svdFile": "${env:RENESAS_RA_TOOLS}/svd/R7KA8P1AD.svd",
+      "windows": {
+        "gdbPath": "${env:ARM_TOOLCHAIN_DIR}/arm-none-eabi-gdb.exe"
+      }
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+build/
+.DS_Store
+*.map
+*.su
+tools/*.pack
+tools/*.svd

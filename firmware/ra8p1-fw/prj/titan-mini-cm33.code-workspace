@@ -1,0 +1,27 @@
+{
+  "folders": [
+    {
+      "name": "titan-mini / CM33 (CPU1)",
+      "path": "../"
+    }
+  ],
+  "settings": {
+    "C_Cpp.autoAddFileAssociations": false,
+    "files.exclude": {
+      "**/.DS_Store": true,
+      "**/.hg": true,
+      "**/.svn": true,
+      "**/CVS": true,
+      "**/prj": true,
+      "**/Thumbs.db": true,
+      "src/cpu/cm85": true,
+      "src/lib/ra_sdk/cm85": true
+    },
+    "search.exclude": {
+      "**/build": true,
+      "src/cpu/cm85": true,
+      "src/lib/ra_sdk/cm85": true
+    },
+    "cortex-debug.variableUseNaturalFormat": true
+  }
+}

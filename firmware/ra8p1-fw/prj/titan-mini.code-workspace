@@ -1,0 +1,23 @@
+{
+  "folders": [
+    {
+      "name": "titan-mini (전체)",
+      "path": "../"
+    }
+  ],
+  "settings": {
+    "C_Cpp.autoAddFileAssociations": false,
+    "files.exclude": {
+      "**/.DS_Store": true,
+      "**/.hg": true,
+      "**/.svn": true,
+      "**/CVS": true,
+      "**/prj": true,
+      "**/Thumbs.db": true
+    },
+    "search.exclude": {
+      "**/build": true
+    },
+    "cortex-debug.variableUseNaturalFormat": true
+  }
+}
