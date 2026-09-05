@@ -19,10 +19,13 @@ project(${PRJ_NAME}
 option(BUILD_CM33 "build CPU1 (Cortex-M33) image" OFF)
 
 
-# 코어별 CMakeLists 가 하위 디렉터리에 있어도 elf/bin/map 은 build/ 바로 아래에 모은다.
-# .vscode/launch.json 과 flash 타겟이 얕고 고정된 경로를 쓰게 하려는 것이다.
+# 산출물 배치
+#   build/cm85/   CPU0 의 elf / bin / map
+#   build/cm33/   CPU1 의 elf / bin / map
+#   build/        두 코어를 묶은 통합 펌웨어 이미지 (41번 단계, tools/mkimage.py)
 #
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+# 소스 트리 구조와 무관하게 코어 이름으로 얕게 잡는다. 코어 디렉터리를 옮겨도
+# .vscode/launch.json 과 flash 타겟이 깨지지 않는다.
 
 
 #-------------------------------------------------------------------------------

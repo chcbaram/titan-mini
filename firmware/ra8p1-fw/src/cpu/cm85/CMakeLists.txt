@@ -6,6 +6,7 @@ set(EXECUTABLE ${PRJ_NAME}-${CORE_NAME}.elf)
 
 set(CORE_DIR   ${CMAKE_CURRENT_SOURCE_DIR})
 set(CORE_SDK   ${RA_SDK_DIR}/${CORE_NAME})   # FSP 설정·생성물은 벤더 트리 아래에 둔다
+set(CORE_OUT   ${CMAKE_BINARY_DIR}/${CORE_NAME})
 
 
 # 이 코어의 소스
@@ -39,6 +40,13 @@ add_executable(${EXECUTABLE}
   ${SRC_FILES_RA_GEN}
   ${SHARED_SRC_FILES}
   ${RA_SDK_SRC_FILES}
+  )
+
+
+# elf / bin / map 을 build/<코어>/ 로 모은다
+#
+set_target_properties(${EXECUTABLE} PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${CORE_OUT}
   )
 
 
@@ -116,7 +124,7 @@ target_link_options(${EXECUTABLE} PRIVATE
   -lm
   -fno-rtti
 
-  -Wl,-Map=${CMAKE_BINARY_DIR}/${PRJ_NAME}-${CORE_NAME}.map,--cref
+  -Wl,-Map=${CORE_OUT}/${PRJ_NAME}-${CORE_NAME}.map,--cref
   -Wl,--gc-sections
   -Wl,--no-warn-rwx-segments
   -Xlinker -print-memory-usage -Xlinker
@@ -129,6 +137,6 @@ add_custom_command(TARGET ${EXECUTABLE}
   POST_BUILD
   COMMAND ${CMAKE_OBJCOPY} ARGS -O binary
           $<TARGET_FILE:${EXECUTABLE}>
-          ${CMAKE_BINARY_DIR}/${PRJ_NAME}-${CORE_NAME}.bin
+          ${CORE_OUT}/${PRJ_NAME}-${CORE_NAME}.bin
   COMMENT "Invoking: Make Bin"
   )

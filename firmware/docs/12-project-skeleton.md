@@ -54,16 +54,28 @@ firmware/
 
 컴파일 정의는 코어별로 `-D_RA_CORE=CPU0` / `CPU1`, 공통으로 `-D_RA_ORDINAL=1 -D_RENESAS_RA_`.
 
-코어별 `CMakeLists.txt` 가 하위 디렉터리에 있지만 **`elf` / `bin` / `map` 은 전부 `build/` 바로 아래**에 모인다. 최상위에서 `CMAKE_RUNTIME_OUTPUT_DIRECTORY` 를 잡아 뒀다.
+산출물은 **코어 이름으로 얕게** 모은다. 소스 트리 구조와 무관하므로 코어 디렉터리를
+옮기거나 이름을 바꿔도 `launch.json` 과 `flash` 타겟이 깨지지 않는다.
 
 ```
-build/titan-mini-cm85.elf
-build/titan-mini-cm85.bin
-build/titan-mini-cm85.map
+build/
+├── cm85/   titan-mini-cm85.elf · .bin · .map
+├── cm33/   titan-mini-cm33.elf · .bin · .map
+└──         titan-mini.fw        두 코어를 묶은 통합 펌웨어 이미지 (41번 단계)
 ```
 
-`launch.json` 과 `flash` 타겟이 얕고 고정된 경로를 쓰게 하려는 것이다. 코어 디렉터리를
-옮기거나 이름을 바꿔도 이 경로는 그대로다.
+`build/` 루트는 **통합 이미지 전용**으로 비워 둔다. `tools/mkimage.py` 가 두 코어의
+`.bin` 을 섹션 컨테이너로 묶어 여기에 쓴다([05-boot-architecture.md](05-boot-architecture.md#2-펌웨어-이미지--섹션-컨테이너)).
+
+코어 쪽 `CMakeLists.txt` 에서 이렇게 잡는다.
+
+```cmake
+set(CORE_OUT ${CMAKE_BINARY_DIR}/${CORE_NAME})
+set_target_properties(${EXECUTABLE} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CORE_OUT})
+```
+
+`.map` 과 `.bin` 도 `${CORE_OUT}` 로 보낸다. `.bin` 은 POST_BUILD 에서
+`$<TARGET_FILE:...>` 로 입력을 받으므로 출력 경로만 지정하면 된다.
 
 CM33 은 아직 스켈레톤이라 기본이 꺼져 있다.
 
@@ -191,7 +203,7 @@ Memory region         Used Size  Region Size  %age Used
 링크된 라이브러리가 `thumb/v8-m.main+dp/hard` 인지 확인한다. Cortex-M85 용이 맞다.
 
 ```bash
-grep -oE '[^ ]*/thumb/[^ ]*/lib[a-z_]*\.a' build/titan-mini-cm85.map | sort -u
+grep -oE '[^ ]*/thumb/[^ ]*/lib[a-z_]*\.a' build/cm85/titan-mini-cm85.map | sort -u
 ```
 
 > RA4M1-CORE 의 `CMakeLists.txt` 는 RA4M1(Cortex-M4)인데 `-mcpu=cortex-m33 -mfpu=fpv4-sp-d16` 으로

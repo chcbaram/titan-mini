@@ -7,6 +7,10 @@
 #   - bsp_linker_info.h 에 BSP_PARTITION_* 매크로를 넣어야
 #     BSP_MULTICORE_PROJECT 가 1 이 되고 R_BSP_SecondaryCoreStart() 가 컴파일된다
 #
+# 산출물은 cm85 와 같은 규칙으로 build/cm33/ 에 모은다.
+#   set(CORE_OUT ${CMAKE_BINARY_DIR}/${CORE_NAME})
+#   set_target_properties(${EXECUTABLE} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CORE_OUT})
+#
 # 켜는 법: cmake -S . -B build -G Ninja -DBUILD_CM33=ON
 #-------------------------------------------------------------------------------
 message(FATAL_ERROR "CM33 이미지는 아직 준비되지 않았다. docs/04-dualcore.md 참고.")
