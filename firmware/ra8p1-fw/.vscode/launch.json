@@ -4,7 +4,7 @@
     {
       "name": "Debug CM85 (pyOCD)",
       "cwd": "${workspaceFolder}",
-      "executable": "./build/src/cm85/titan-mini-cm85.elf",
+      "executable": "./build/titan-mini-cm85.elf",
       "request": "launch",
       "type": "cortex-debug",
       "runToEntryPoint": "main",
@@ -22,7 +22,7 @@
     {
       "name": "Attach CM85 (pyOCD)",
       "cwd": "${workspaceFolder}",
-      "executable": "./build/src/cm85/titan-mini-cm85.elf",
+      "executable": "./build/titan-mini-cm85.elf",
       "request": "attach",
       "type": "cortex-debug",
       "servertype": "pyocd",

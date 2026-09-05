@@ -19,6 +19,12 @@ project(${PRJ_NAME}
 option(BUILD_CM33 "build CPU1 (Cortex-M33) image" OFF)
 
 
+# 코어별 CMakeLists 가 하위 디렉터리에 있어도 elf/bin/map 은 build/ 바로 아래에 모은다.
+# .vscode/launch.json 과 flash 타겟이 얕고 고정된 경로를 쓰게 하려는 것이다.
+#
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+
 #-------------------------------------------------------------------------------
 # 코어가 공유하는 것
 #   - src/common      : 포터블 코어와 드라이버 공개 헤더

@@ -54,6 +54,17 @@ firmware/
 
 컴파일 정의는 코어별로 `-D_RA_CORE=CPU0` / `CPU1`, 공통으로 `-D_RA_ORDINAL=1 -D_RENESAS_RA_`.
 
+코어별 `CMakeLists.txt` 가 하위 디렉터리에 있지만 **`elf` / `bin` / `map` 은 전부 `build/` 바로 아래**에 모인다. 최상위에서 `CMAKE_RUNTIME_OUTPUT_DIRECTORY` 를 잡아 뒀다.
+
+```
+build/titan-mini-cm85.elf
+build/titan-mini-cm85.bin
+build/titan-mini-cm85.map
+```
+
+`launch.json` 과 `flash` 타겟이 얕고 고정된 경로를 쓰게 하려는 것이다. 코어 디렉터리를
+옮기거나 이름을 바꿔도 이 경로는 그대로다.
+
 CM33 은 아직 스켈레톤이라 기본이 꺼져 있다.
 
 ```bash

@@ -101,13 +101,13 @@ Reset_Handler                       startup.c
 ## 5. 이 프로젝트의 진입 흐름
 
 ```
-main()                    src/cm85/main.c
-  ├─ bspInit()            src/cm85/bsp/bsp.c
+main()                    src/cpu/cm85/main.c
+  ├─ bspInit()            src/cpu/cm85/bsp/bsp.c
   │    ├─ (캐시는 _USE_HW_CACHE 로 잠가둠)
   │    ├─ hal_entry()     src/lib/ra_sdk/cm85/src/hal_entry.c  — 현재 비어 있음
   │    └─ SysTick_Config(SystemCoreClock / 1000)
-  ├─ hwInit()             src/cm85/hw/hw.c   — ledInit()
-  ├─ apInit()             src/cm85/ap/ap.c
+  ├─ hwInit()             src/cpu/cm85/hw/hw.c   — ledInit()
+  ├─ apInit()             src/cpu/cm85/ap/ap.c
   └─ apMain()             500 ms LED 토글
 ```
 

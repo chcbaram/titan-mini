@@ -24,7 +24,7 @@ file(GLOB_RECURSE SRC_FILES_RECURSE CONFIGURE_DEPENDS
   )
 
 # 이 코어의 FSP 생성물 (ra_gen) 과 사용자 훅 (ra_sdk/src)
-#   ra_gen/main.c 는 RASC 가 만든 것이라 제외한다. main 은 src/cm85/main.c 다.
+#   ra_gen/main.c 는 RASC 가 만든 것이라 제외한다. main 은 src/cpu/cm85/main.c 다.
 #
 file(GLOB SRC_FILES_RA_GEN CONFIGURE_DEPENDS
   ${CORE_SDK}/ra_gen/*.c
@@ -116,7 +116,7 @@ target_link_options(${EXECUTABLE} PRIVATE
   -lm
   -fno-rtti
 
-  -Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${PRJ_NAME}-${CORE_NAME}.map,--cref
+  -Wl,-Map=${CMAKE_BINARY_DIR}/${PRJ_NAME}-${CORE_NAME}.map,--cref
   -Wl,--gc-sections
   -Wl,--no-warn-rwx-segments
   -Xlinker -print-memory-usage -Xlinker
@@ -127,6 +127,8 @@ target_link_options(${EXECUTABLE} PRIVATE
 #
 add_custom_command(TARGET ${EXECUTABLE}
   POST_BUILD
-  COMMAND ${CMAKE_OBJCOPY} ARGS -O binary ${EXECUTABLE} ${PRJ_NAME}-${CORE_NAME}.bin
+  COMMAND ${CMAKE_OBJCOPY} ARGS -O binary
+          $<TARGET_FILE:${EXECUTABLE}>
+          ${CMAKE_BINARY_DIR}/${PRJ_NAME}-${CORE_NAME}.bin
   COMMENT "Invoking: Make Bin"
   )
