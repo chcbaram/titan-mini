@@ -49,7 +49,6 @@ VSCode 는 `firmware/ra8p1-fw/prj/titan-mini-cm85.code-workspace` 를 연다.
 | SDRAM DQ0~DQ7 핀 | 회로도 파서가 일부를 놓쳤다 | 27번 |
 | 오디오 DSIN 핀 | 〃. 카메라 VIO_D2 와 충돌한다 | 34번 |
 | RA8P1 TinyUSB 포팅 유무 | 없으면 `r_usb_basic` + PCDC/PMSC 로 간다 | 35번 |
-| 콘솔 SCI2 와 OSPI 8비트 겸용 | P801/P802 가 OSPI0 의 DQS·SIO6 이다. 옥탈로 가려면 콘솔을 SCI1 로 옮긴다 | 26번 |
 
 ## 문서 번호 규칙
 

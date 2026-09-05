@@ -33,9 +33,11 @@ $RENESAS_RA_TOOLS/device/ra8p1_mcu/.mcu/.pinmapping/PinCfgR7KA8P1KxxCAC.xml
    SCI2:  TXD2           SCI2:  RXD2
 ```
 
-> P801/P802 는 OSPI0 의 DQS · SIO6 과 겸용이다. 지금은 OSPI 를 4비트 모드로 쓸 계획이라
-> 충돌하지 않지만, 8비트(옥탈)로 가려면 UART 를 SCI1(40핀 헤더)로 옮겨야 한다.
-> 옮기는 방법은 아래 2장 그대로에 채널과 핀만 바꾸면 된다.
+> P801/P802 는 기능상 OSPI0 의 DQS · SIO6 과 겸용이지만 **이 보드에서는 충돌하지 않는다.**
+> 유일한 OSPI 장치인 W25Q64 가 SOIC-8 쿼드 전용이라 `IO0~IO3` · `CLK` · `CS#` 여섯 신호만
+> 배선돼 있고, DQS 와 SIO4~7 은 실장 자체가 없다(회로도 11페이지).
+>
+> SCI1(40핀 헤더, P707/P706)로 옮기고 싶으면 아래 2장에서 채널과 핀만 바꾸면 된다.
 
 ## 2. FSP 설정 — RASC 재생성
 

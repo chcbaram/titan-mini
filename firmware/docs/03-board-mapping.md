@@ -82,8 +82,9 @@ RGB LED 한 개(`LED3`, `XL-1615RGBC-RF`)다. 공통 애노드가 `+3V3` 에 물
 여기에 HSLink 의 가상 시리얼이 붙어 있다. 디버거 케이블 하나로 적재와 콘솔이 동시에 된다.
 ([21-uart-cli.md](21-uart-cli.md))
 
-> P801/P802 는 OSPI0 의 `OM_0_DQS` · `OM_0_SIO6` 과 겸용이다. OSPI 를 8비트(옥탈)로 쓰려면
-> 콘솔을 SCI1(40핀 헤더)로 옮겨야 한다.
+> P801/P802 는 기능상 OSPI0 의 `OM_0_DQS` · `OM_0_SIO6` 과 겸용이지만 **충돌하지 않는다.**
+> 이 보드의 유일한 OSPI 장치인 W25Q64 는 SOIC-8 쿼드 전용이라 `IO0~IO3` · `CLK` · `CS#`
+> 여섯 신호만 배선돼 있다. DQS 도 SIO4~7 도 실장 자체가 없다.
 
 ## 5. 외부 메모리
 
@@ -119,6 +120,9 @@ OSPI(OSPI_B) 2유닛만 있고, 이 플래시는 **OSPI0 의 OM_0 채널, CS1** 
 | `OSPI0_OM_0_SIO3` | **P101** | `QSPI_SIO3` (HOLD#/RESET#) | R32 36Ω |
 
 CS# 에 R28 10 KΩ 풀업이 있다.
+
+**W25Q64JVSSIQ 는 SOIC-8 쿼드 전용이다.** 위 여섯 신호가 전부이고 DQS · SIO4~7 은
+배선 자체가 없다. 보드에 옥탈 메모리는 없다 — OSPI0 CS0 도 OSPI1 도 비어 있다.
 
 **메모리 맵** — CS1 이므로 XIP 창은 **`0x9000_0000`** 이다. `0x8000_0000`(CS0) 이 아니다.
 `memory_regions.ld` 의 `OSPI0_CS1_START` 와 일치한다.
