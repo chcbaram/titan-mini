@@ -28,7 +28,40 @@ export RENESAS_RA_TOOLS=~/hdd/tools/renesas-ra
 
 **툴체인은 새로 설치하지 않는다.** 이미 있는 14.2.Rel1 을 쓴다. `-mcpu=cortex-m85 -mfpu=fpv5-d16` 컴파일이 확인됐다.
 
-DFP 팩(94 MB)과 SVD(21 MB)는 크기 때문에 저장소에 넣지 않는다. `.gitignore` 에 `tools/*.pack`, `tools/*.svd` 가 있다.
+### 디버그 자산은 저장소에 넣지 않는다
+
+DFP 팩(94 MB)과 SVD(21 MB)는 크기 때문에 커밋하지 않는다. 위치는 **환경변수
+`RENESAS_RA_TOOLS` 하나로** 알려준다. CMake 와 `.vscode/launch.json` 이 같은 변수를 쓴다.
+
+`.gitignore` 에 `tools/*.pack`, `tools/*.svd` 가 있어서 로컬에 복사해 두어도 커밋되지 않는다.
+
+> ### 셸 프로파일에 넣어야 한다
+>
+> **터미널에서 그때그때 `export` 한 값은 GUI 로 띄운 VSCode 에 넘어가지 않는다.**
+> 이걸 놓치면 `launch.json` 의 `${env:RENESAS_RA_TOOLS}` 가 빈 문자열이 되어,
+> 앞부분이 통째로 날아간 경로가 pyocd 에 전달된다.
+>
+> ```
+> pyocd gdbserver --pack /packs/Renesas.RA_DFP.6.6.0-fixed.pack
+> Error: [Errno 2] No such file or directory: '/packs/Renesas.RA_DFP.6.6.0-fixed.pack'
+> ```
+>
+> `~/.zshrc` (또는 `~/.bashrc`) 에 넣고 **VSCode 를 다시 띄운다.**
+>
+> ```bash
+> export RENESAS_RA_TOOLS=~/hdd/tools/renesas-ra
+> ```
+>
+> Windows 는 사용자 환경 변수로 등록하고 VSCode 를 재시작한다.
+
+변수를 안 쓰고 직접 지정해도 된다.
+
+```bash
+cmake -S . -B build -G Ninja -DRA_DFP_PACK=/path/to/Renesas.RA_DFP.6.6.0-fixed.pack
+```
+
+변수가 없으면 configure 가 경고를 띄우고 `flash` 타겟은 실패한다. 조용히 넘어가면
+나중에 pyocd 가 빈 경로를 받아 엉뚱한 에러를 내기 때문이다.
 
 ## 2. 함정 세 가지
 
@@ -117,11 +150,8 @@ cmake --build build -j8
 cmake --build build --target flash
 ```
 
-`flash` 타깃은 셸 스크립트가 아니라 CMake custom target 이라 세 OS 에서 같은 명령으로 돌아간다. 팩 경로는 이 순서로 찾는다.
-
-1. `-DRA_DFP_PACK=<경로>`
-2. `tools/Renesas.RA_DFP.*.pack`
-3. `$RENESAS_RA_TOOLS/packs/Renesas.RA_DFP.*-fixed.pack`
+`flash` 타깃은 셸 스크립트가 아니라 CMake custom target 이라 세 OS 에서 같은 명령으로 돌아간다.
+팩은 `-DRA_DFP_PACK=<경로>` 를 먼저 보고, 없으면 `$RENESAS_RA_TOOLS/packs/*-fixed.pack` 에서 찾는다.
 
 VSCode 에서는 `prj/titan-mini-cm85.code-workspace` 를 연다. 상대 코어 폴더가 숨겨진다.
 
