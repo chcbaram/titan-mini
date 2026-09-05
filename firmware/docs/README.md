@@ -149,6 +149,13 @@ LCD 와 터치 패널이 아직 보드에 연결돼 있지 않다. 하드웨어�
 python3 firmware/docs/check_svg.py
 ```
 
+계층 규칙도 검사한다. `ap` 와 `common` 이 벤더 HAL 을 부르지 않는지 본다
+([12장](12-project-skeleton.md#계층-규칙--ap-는-벤더-hal-을-모른다)).
+
+```bash
+python3 firmware/ra8p1-fw/tools/check_layers.py
+```
+
 ## 출처
 
 | 약칭 | 문서 | 비고 |

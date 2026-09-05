@@ -42,6 +42,33 @@ firmware/
 
 `src/common/core/`(qbuffer, util_core)와 겹치지 않도록 코어 디렉터리는 `core` 가 아니라 **`cpu`** 다. FSP 도 `_RA_CORE=CPU0` 처럼 CPU 로 부른다.
 
+### 계층 규칙 — ap 는 벤더 HAL 을 모른다
+
+이 프로젝트의 이식성은 규칙 하나에 걸려 있다. **MCU 가 바뀌면 `bsp` 와 `hw/driver` 는 다시
+쓰지만 `ap` 와 `common` 은 그대로 간다.**
+
+| 층 | 벤더 HAL(FSP/CMSIS) | 역할 |
+|---|---|---|
+| `ap/` | **금지** | 애플리케이션. `hw/` 의 공용 API 만 쓴다 |
+| `common/` | **금지** | 다른 저장소와 그대로 공유하는 포터블 코드 |
+| `hw/driver/` | 허용 | **여기가 MCU 의존을 가두는 층이다** |
+| `bsp/` | 허용 | MCU 초기화, 클럭, 시간 |
+
+`ap` 가 `hw` 드라이버를 부르는 것은 정상 경로다. 막는 것은 `ap` 가 `R_IOPORT_PinWrite()` 같은
+FSP 함수를 **직접** 부르는 것이다.
+
+> ### 컴파일러는 이걸 막아주지 않는다
+>
+> `ap_def.h` → `hw.h` → `hw_def.h` → `bsp.h` → `hal_data.h` 로 FSP 심볼이 `ap` 까지 전부
+>보인다. 관행에만 의존하면 언젠가 새어 들어간다. 그래서 검사기를 둔다.
+>
+> ```bash
+> python3 firmware/ra8p1-fw/tools/check_layers.py
+> ```
+>
+> `R_*` / `FSP_*` / `BSP_*` / `fsp_err_t` / `g_ioport` 같은 벤더 심볼과 `hal_data.h`,
+> `r_*.h` 같은 벤더 헤더를 금지 층에서 찾는다. 위반이 있으면 종료 코드 1 이다.
+
 ### 핀 번호는 드라이버 `.c` 에 적는다
 
 `hw_def.h` 에는 **기능 스위치와 개수만** 둔다. 어느 핀을 쓰는지는 그 핀을 쓰는 드라이버가
